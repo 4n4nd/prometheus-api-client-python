@@ -21,7 +21,7 @@ CONNECTION_RETRY_WAIT_TIME = 1000 # wait 1 second before retrying in case of an 
 
 class PrometheusConnect:
     """docstring for Prometheus."""
-    def __init__(self, url='', token=None):
+    def __init__(self, url='127.0.0.1:9090', token=None):
         self.headers = { 'Authorization': "bearer {}".format(token) }
         self.url = url
         self.prometheus_host = urlparse(self.url).netloc
@@ -55,6 +55,11 @@ class PrometheusConnect:
             query = metric_name + "{" + ",".join(label_list) + "}"
         else:
             query = metric_name
+            
+        response = requests.get('{0}/api/v1/query'.format(self.url),    # using the query API to get raw data
+                                params={'query': query},#label_config},
+                                verify=False, # Disable ssl certificate verification temporarily
+                                headers=self.headers)
 
         if response.status_code == 200:
             data += response.json()['data']['result']
