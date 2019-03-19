@@ -1,55 +1,96 @@
+"""
+A Class for collection of metrics from a Prometheus Host.
+"""
 from urllib.parse import urlparse
-import requests
-import datetime
-import json
-import time
-import dateparser
-import sys
-import os
-from retrying import retry
 import bz2
+import os
+import sys
+import json
+import logging
+import requests
+import dateparser
+from retrying import retry
 
 # set up logging
-import logging
 _LOGGER = logging.getLogger(__name__)
-
-# Disable SSL warnings
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 DEBUG = False
 MAX_REQUEST_RETRIES = 3
 CONNECTION_RETRY_WAIT_TIME = 1000 # wait 1 second before retrying in case of an error
 
 class PrometheusConnect:
-    """docstring for Prometheus."""
-    def __init__(self, url='127.0.0.1:9090', token=None):
-        self.headers = { 'Authorization': "bearer {}".format(token) }
+    """
+    A Class for collection of metrics from a Prometheus Host.
+    """
+    def __init__(self, url='http://127.0.0.1:9090', headers=None, disable_ssl=False):
+        """
+        A short description.
+
+        A bit longer description.
+
+        Args:
+            url (str): url for the prometheus host
+            headers (dict): A dictionary of http headers to be used to communicate with the host.
+                            Example: {'Authorization': "bearer my_oauth_token_to_the_host"}
+            disable_ssl (bool): If set to True, will disable ssl certificate verification
+                                for the http requests made to the prometheus host
+        """
+        self.headers = headers
         self.url = url
         self.prometheus_host = urlparse(self.url).netloc
         self._all_metrics = None
+        self.ssl_verification = (not disable_ssl)
 
     @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES, wait_fixed=CONNECTION_RETRY_WAIT_TIME)
     def all_metrics(self):
-        '''
+        """
         Get the list of all the metrics that the prometheus host has
-        '''
+
+        Returns:
+            list: list of names of all the metrics available from the specified prometheus host
+
+        Raises:
+            Exception: description
+
+        """
+
         response = requests.get('{0}/api/v1/label/__name__/values'.format(self.url),
-                                verify=False, # Disable ssl certificate verification temporarily
+                                verify=self.ssl_verification,
                                 headers=self.headers)
 
         if response.status_code == 200:
             self._all_metrics = response.json()['data']
         else:
-            raise Exception("HTTP Status Code {} {} ({})".format(
+            raise Exception("HTTP Status Code {} ({})".format(
                 response.status_code,
-                requests.status_codes._codes[response.status_code][0],
                 response.content
             ))
         return self._all_metrics
 
     @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES, wait_fixed=CONNECTION_RETRY_WAIT_TIME)
-    def get_current_metric_value(self, metric_name, label_config = None):
+    def get_current_metric_value(self, metric_name, label_config=None):
+        """
+        A method to get the current metric value for the specified metric
+        and label configuration.
+
+        For example:
+                    prom = PrometheusConnect()
+                    my_label_config = {'cluster': 'my_cluster_id',
+                                       'label_2': 'label_2_value'}
+                    prom.get_current_metric_value(metric_name='up', label_config=my_label_config)
+
+        Args:
+            metric_name (str): The name of the metric
+            label_config (dict): A dictionary that specifies metric labels and their values
+
+        Returns:
+            list: A list of current metric data for the specified metric
+
+        Raises:
+            Http Response error: Raises an exception in case of a connection error
+
+        """
+
         data = []
         if label_config:
             label_list = [str(key+"="+ "'" + label_config[key]+ "'") for key in label_config]
@@ -58,23 +99,57 @@ class PrometheusConnect:
         else:
             query = metric_name
 
-        response = requests.get('{0}/api/v1/query'.format(self.url),    # using the query API to get raw data
-                                params={'query': query},#label_config},
-                                verify=False, # Disable ssl certificate verification temporarily
+        # using the query API to get raw data
+        response = requests.get('{0}/api/v1/query'.format(self.url),
+                                params={'query': query},
+                                verify=self.ssl_verification,
                                 headers=self.headers)
 
         if response.status_code == 200:
             data += response.json()['data']['result']
         else:
-            raise Exception("HTTP Status Code {} {} ({})".format(
+            raise Exception("HTTP Status Code {} ({})".format(
                 response.status_code,
-                requests.status_codes._codes[response.status_code][0],
                 response.content
             ))
-        return (data)
+        return data
 
     @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES, wait_fixed=CONNECTION_RETRY_WAIT_TIME)
-    def get_metric_range_data(self, metric_name, start_time, end_time='now', chunk_size=None,label_config=None, store_locally=False):
+    def get_metric_range_data(self,
+                              metric_name,
+                              label_config=None,
+                              start_time='10m',
+                              end_time='now',
+                              chunk_size=None,
+                              store_locally=False):
+        """
+        A method to get the current metric value for the specified metric
+        and label configuration.
+
+        For example:
+                    prom = PrometheusConnect()
+                    my_label_config = {'cluster': 'my_cluster_id',
+                                       'label_2': 'label_2_value'}
+                    prom.get_current_metric_value(metric_name='up', label_config=my_label_config)
+
+        Args:
+            metric_name (str): The name of the metric
+            label_config (dict): A dictionary that specifies metric labels and their values
+            start_time (str):
+            end_time (str):
+            chunk_size (str): Duration of metric data downloaded in one request.
+                              example, setting it to '3h' will download 3 hours
+                              worth of data in each request made to the prometheus host
+            store_locally (bool): If set to True, will store data locally at,
+                          "./metrics/$(PROMETHEUS_HOST)/$(METRIC_DATE)/$(METRIC_TIMESTAMP).json.bz2"
+
+        Returns:
+            list: A list of metric data for the specified metric in the given time range
+
+        Raises:
+            Http Response error: Raises an exception in case of a connection error
+
+        """
         data = []
 
         start = int(dateparser.parse(str(start_time)).timestamp())
@@ -84,7 +159,9 @@ class PrometheusConnect:
             chunk_seconds = int(end - start)
             chunk_size = str(int(chunk_seconds)) + "s"
         else:
-            chunk_seconds = int(round((dateparser.parse('now') - dateparser.parse(chunk_size)).total_seconds()))
+            chunk_seconds = (int(round((dateparser.parse('now') -
+                                        dateparser.parse(chunk_size)
+                                       ).total_seconds())))
 
         if int(end-start) < chunk_seconds:
             sys.exit("specified chunk_size is too big")
@@ -97,37 +174,38 @@ class PrometheusConnect:
             query = metric_name
 
         while start < end:
-            # print(chunk_size)
-            response = requests.get('{0}/api/v1/query'.format(self.url),    # using the query API to get raw data
-                                params={'query': query + '[' + chunk_size + ']',
-                                        'time': start + chunk_seconds
-                                        },
-                                verify=False, # Disable ssl certificate verification temporarily
-                                headers=self.headers)
+            # using the query API to get raw data
+            response = requests.get('{0}/api/v1/query'.format(self.url),
+                                    params={'query': query + '[' + chunk_size + ']',
+                                            'time': start + chunk_seconds
+                                            },
+                                    verify=self.ssl_verification,
+                                    headers=self.headers)
             if response.status_code == 200:
                 data += response.json()['data']['result']
             else:
-                raise Exception("HTTP Status Code {} {} ({})".format(
+                raise Exception("HTTP Status Code {} ({})".format(
                     response.status_code,
-                    requests.status_codes._codes[response.status_code][0],
                     response.content
                 ))
             if store_locally:
                 # store it locally
-                self.store_metric_values_local(metric_name , (response.json()['data']['result']), start + chunk_seconds)
+                self._store_metric_values_local(metric_name,
+                                                json.dumps(response.json()['data']['result']),
+                                                start + chunk_seconds)
 
             start += chunk_seconds
-        return (data)
+        return data
 
-    def store_metric_values_local(self, metric_name, values, end_timestamp, file_path=None, compressed=True):
+    def _store_metric_values_local(self, metric_name, values, end_timestamp, compressed=False):
         '''
-        Function to store metrics locally
+        Method to store metrics locally
         '''
         if not values:
-            return "No values for {}".format(metric_name)
+            _LOGGER.debug("No values for %s", metric_name)
+            return None
 
-        if not file_path:
-            file_path = self._metric_filename(metric_name, end_timestamp)
+        file_path = self._metric_filename(metric_name, end_timestamp)
 
         if compressed:
             payload = bz2.compress(str(values).encode('utf-8'))
@@ -139,6 +217,8 @@ class PrometheusConnect:
         with open(file_path, "wb") as file:
             file.write(payload)
 
+        return file_path
+
     def _metric_filename(self, metric_name, end_timestamp):
         '''
         Adds a timestamp to the filename before it is stored
@@ -146,10 +226,19 @@ class PrometheusConnect:
         end_timestamp = dateparser.parse(str(end_timestamp))
         directory_name = end_timestamp.strftime("%Y%m%d")
         timestamp = end_timestamp.strftime("%Y%m%d%H%M")
-        object_path = "./metrics/" + self.prometheus_host + "/" + metric_name + "/" + directory_name + "/" + timestamp + ".json"
+        object_path = "./metrics/" + self.prometheus_host + "/" + \
+                        metric_name + "/" + directory_name + "/" + timestamp + ".json"
         return object_path
 
-    def pretty_print_metric(self, metric_data):
-        data = metric_data
-        for metric in data:
-            print(json.dumps(metric, indent=4, sort_keys=True))
+def pretty_print_metric(metric_data):
+    """
+    A function to pretty print the metric data downloaded using class PrometheusConnect.
+
+    Args:
+        metric_data (list): This is the metric data returned from functions
+                            get_metric_range_data and get_current_metric_value
+    """
+
+    data = metric_data
+    for metric in data:
+        print(json.dumps(metric, indent=4, sort_keys=True))
