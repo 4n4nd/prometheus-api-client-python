@@ -20,7 +20,7 @@ CONNECTION_RETRY_WAIT_TIME = 1000 # wait 1 second before retrying in case of an 
 
 class PrometheusConnect:
     """
-    A Class for collection of metrics from a Prometheus Host.
+    A Class for collection of metrics from a Prometheus Host
     """
     def __init__(self, url='http://127.0.0.1:9090', headers=None, disable_ssl=False):
         """
