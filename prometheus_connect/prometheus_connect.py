@@ -14,7 +14,7 @@ from retrying import retry
 # set up logging
 _LOGGER = logging.getLogger(__name__)
 
-DEBUG = False
+# In case of a connection failure try 2 more times
 MAX_REQUEST_RETRIES = 3
 CONNECTION_RETRY_WAIT_TIME = 1000 # wait 1 second before retrying in case of an error
 
@@ -24,9 +24,7 @@ class PrometheusConnect:
     """
     def __init__(self, url='http://127.0.0.1:9090', headers=None, disable_ssl=False):
         """
-        A short description.
-
-        A bit longer description.
+        Constructor for the class PrometheusConnect
 
         Args:
             url (str): url for the prometheus host
@@ -50,10 +48,8 @@ class PrometheusConnect:
             list: list of names of all the metrics available from the specified prometheus host
 
         Raises:
-            Exception: description
-
+            Http Response error: Raises an exception in case of a connection error
         """
-
         response = requests.get('{0}/api/v1/label/__name__/values'.format(self.url),
                                 verify=self.ssl_verification,
                                 headers=self.headers)
@@ -88,9 +84,7 @@ class PrometheusConnect:
 
         Raises:
             Http Response error: Raises an exception in case of a connection error
-
         """
-
         data = []
         if label_config:
             label_list = [str(key+"="+ "'" + label_config[key]+ "'") for key in label_config]
@@ -135,8 +129,21 @@ class PrometheusConnect:
         Args:
             metric_name (str): The name of the metric
             label_config (dict): A dictionary that specifies metric labels and their values
-            start_time (str):
-            end_time (str):
+            start_time (str): A string that specifies the metric range start time.
+                              It uses the dateparser (https://dateparser.readthedocs.io/en/v0.3.4/)
+                              module.
+                              Example:
+                                    start_time='15m' will set the start time to
+                                                15 mins before the current time
+                                    start_time='1553092437' will set the start time
+                                                to the given unix timestamp
+                                    start_time='12 May 2018' will set the start time to
+                                                '2018-05-12 00:00:00'
+            end_time (str): A string that specifies the metric range end time.
+                            It follows the same rules as parameter start_time, it just
+                            needs to be a time later than the start_time.
+                            Example:
+                                    end_time='now' will set the end time to the current time
             chunk_size (str): Duration of metric data downloaded in one request.
                               example, setting it to '3h' will download 3 hours
                               worth of data in each request made to the prometheus host
@@ -148,7 +155,6 @@ class PrometheusConnect:
 
         Raises:
             Http Response error: Raises an exception in case of a connection error
-
         """
         data = []
 
@@ -230,15 +236,50 @@ class PrometheusConnect:
                         metric_name + "/" + directory_name + "/" + timestamp + ".json"
         return object_path
 
+    @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES, wait_fixed=CONNECTION_RETRY_WAIT_TIME)
+    def custom_query(self, query: str):
+        """
+        A method to send a custom query to a Prometheus Host.
+
+        This method takes as input a string which will be sent as a query to
+        the specified Prometheus Host. This query is a PromQL query.
+
+        Args:
+            query (str): This is a PromQL query, a few examples can be found
+                         at https://prometheus.io/docs/prometheus/latest/querying/examples/
+
+        Returns:
+            list: A list of metric data received in response of the query sent
+
+        Raises:
+            Http Response error: Raises an exception in case of a connection error
+        """
+        data = None
+        query = str(query)
+        # using the query API to get raw data
+        response = requests.get('{0}/api/v1/query'.format(self.url),
+                                params={'query': query
+                                        },
+                                verify=self.ssl_verification,
+                                headers=self.headers)
+        if response.status_code == 200:
+            data = response.json()['data']['result']
+        else:
+            raise Exception("HTTP Status Code {} ({})".format(
+                response.status_code,
+                response.content
+            ))
+
+        return data
+
 def pretty_print_metric(metric_data):
     """
     A function to pretty print the metric data downloaded using class PrometheusConnect.
 
     Args:
-        metric_data (list): This is the metric data returned from functions
+        metric_data (list): This is the metric data list returned from methods
                             get_metric_range_data and get_current_metric_value
     """
-
     data = metric_data
     for metric in data:
         print(json.dumps(metric, indent=4, sort_keys=True))
