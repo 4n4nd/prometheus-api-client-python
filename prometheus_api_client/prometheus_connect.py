@@ -21,17 +21,18 @@ CONNECTION_RETRY_WAIT_TIME = 1000 # wait 1 second before retrying in case of an 
 class PrometheusConnect:
     """
     A Class for collection of metrics from a Prometheus Host
+
+    :param url: (str) url for the prometheus host
+    :param headers: (dict) A dictionary of http headers to be used to communicate with the host.
+                    Example: {"Authorization": "bearer my_oauth_token_to_the_host"}
+    :param disable_ssl: (bool) If set to True, will disable ssl certificate verification
+                               for the http requests made to the prometheus host
+
     """
     def __init__(self, url='http://127.0.0.1:9090', headers=None, disable_ssl=False):
         """
         Constructor for the class PrometheusConnect
 
-        Args:
-            url (str): url for the prometheus host
-            headers (dict): A dictionary of http headers to be used to communicate with the host.
-                            Example: {'Authorization': "bearer my_oauth_token_to_the_host"}
-            disable_ssl (bool): If set to True, will disable ssl certificate verification
-                                for the http requests made to the prometheus host
         """
         self.headers = headers
         self.url = url
@@ -42,13 +43,13 @@ class PrometheusConnect:
     @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES, wait_fixed=CONNECTION_RETRY_WAIT_TIME)
     def all_metrics(self):
         """
-        Get the list of all the metrics that the prometheus host has
+        Get the list of all the metrics that the prometheus host scrapes
 
-        Returns:
-            list: list of names of all the metrics available from the specified prometheus host
+        :return: (list) A list of names of all the metrics available from the
+                  specified prometheus host
 
-        Raises:
-            Http Response error: Raises an exception in case of a connection error
+        :raises: (Http Response error) Raises an exception in case of a connection error
+
         """
         response = requests.get('{0}/api/v1/label/__name__/values'.format(self.url),
                                 verify=self.ssl_verification,
@@ -69,21 +70,21 @@ class PrometheusConnect:
         A method to get the current metric value for the specified metric
         and label configuration.
 
-        For example:
-                    prom = PrometheusConnect()
-                    my_label_config = {'cluster': 'my_cluster_id',
-                                       'label_2': 'label_2_value'}
-                    prom.get_current_metric_value(metric_name='up', label_config=my_label_config)
+        :param metric_name: (str) The name of the metric
 
-        Args:
-            metric_name (str): The name of the metric
-            label_config (dict): A dictionary that specifies metric labels and their values
+        :param label_config: (dict) A dictionary that specifies metric labels and their values
 
-        Returns:
-            list: A list of current metric data for the specified metric
+        :return: (list) A list of current metric values for the specified metric
 
-        Raises:
-            Http Response error: Raises an exception in case of a connection error
+        :raises: (Http Response error) Raises an exception in case of a connection error
+
+        Example Usage:
+            ``prom = PrometheusConnect()``
+
+            ``my_label_config = {'cluster': 'my_cluster_id', 'label_2': 'label_2_value'}``
+
+            ``prom.get_current_metric_value(metric_name='up', label_config=my_label_config)``
+
         """
         data = []
         if label_config:
@@ -120,42 +121,26 @@ class PrometheusConnect:
         A method to get the current metric value for the specified metric
         and label configuration.
 
-        For example:
-                    prom = PrometheusConnect()
-                    my_label_config = {'cluster': 'my_cluster_id',
-                                       'label_2': 'label_2_value'}
-                    prom.get_current_metric_value(metric_name='up', label_config=my_label_config)
+        :param metric_name: (str) The name of the metric.
 
-        Args:
-            metric_name (str): The name of the metric
-            label_config (dict): A dictionary that specifies metric labels and their values
-            start_time (str): A string that specifies the metric range start time.
-                              It uses the dateparser (https://dateparser.readthedocs.io/en/v0.3.4/)
-                              module.
-                              Example:
-                                    start_time='15m' will set the start time to
-                                                15 mins before the current time
-                                    start_time='1553092437' will set the start time
-                                                to the given unix timestamp
-                                    start_time='12 May 2018' will set the start time to
-                                                '2018-05-12 00:00:00'
-            end_time (str): A string that specifies the metric range end time.
-                            It follows the same rules as parameter start_time, it just
-                            needs to be a time later than the start_time.
-                            Example:
-                                    end_time='now' will set the end time to the current time
-            chunk_size (str): Duration of metric data downloaded in one request.
-                              example, setting it to '3h' will download 3 hours
-                              worth of data in each request made to the prometheus host
-            store_locally (bool): If set to True, will store data locally at,
-                          "./metrics/$(PROMETHEUS_HOST)/$(METRIC_DATE)/$(METRIC_TIMESTAMP).json.bz2"
+        :param label_config: (dict) A dictionary that specifies metric labels and their values.
 
-        Returns:
-            list: A list of metric data for the specified metric in the given time range
+        :param start_time:  (str) A string that specifies the metric range start time.
 
-        Raises:
-            Http Response error: Raises an exception in case of a connection error
+        :param end_time: (str) A string that specifies the metric range end time.
+
+        :param chunk_size: (str) Duration of metric data downloaded in one request.
+                          example, setting it to '3h' will download 3 hours
+                          worth of data in each request made to the prometheus host
+        :param store_locally: (bool) If set to True, will store data locally at,
+                              `"./metrics/hostname/metric_date/name_time.json.bz2"`
+
+        :return: (list) A list of metric data for the specified metric in the given time range
+
+        :raises: (Http Response error) Raises an exception in case of a connection error
+
         """
+
         data = []
 
         start = int(dateparser.parse(str(start_time)).timestamp())
@@ -206,6 +191,7 @@ class PrometheusConnect:
     def _store_metric_values_local(self, metric_name, values, end_timestamp, compressed=False):
         '''
         Method to store metrics locally
+
         '''
         if not values:
             _LOGGER.debug("No values for %s", metric_name)
@@ -228,6 +214,7 @@ class PrometheusConnect:
     def _metric_filename(self, metric_name, end_timestamp):
         '''
         Adds a timestamp to the filename before it is stored
+
         '''
         end_timestamp = dateparser.parse(str(end_timestamp))
         directory_name = end_timestamp.strftime("%Y%m%d")
@@ -244,15 +231,13 @@ class PrometheusConnect:
         This method takes as input a string which will be sent as a query to
         the specified Prometheus Host. This query is a PromQL query.
 
-        Args:
-            query (str): This is a PromQL query, a few examples can be found
-                         at https://prometheus.io/docs/prometheus/latest/querying/examples/
+        :param query: (str) This is a PromQL query, a few examples can be found
+                        at https://prometheus.io/docs/prometheus/latest/querying/examples/
 
-        Returns:
-            list: A list of metric data received in response of the query sent
+        :Returns: (list) A list of metric data received in response of the query sent
 
-        Raises:
-            Http Response error: Raises an exception in case of a connection error
+        :raises: (Http Response error) Raises an exception in case of a connection error
+
         """
         data = None
         query = str(query)
@@ -276,9 +261,9 @@ def pretty_print_metric(metric_data):
     """
     A function to pretty print the metric data downloaded using class PrometheusConnect.
 
-    Args:
-        metric_data (list): This is the metric data list returned from methods
+    :param metric_data: (list) This is the metric data list returned from methods
                             get_metric_range_data and get_current_metric_value
+
     """
     data = metric_data
     for metric in data:
