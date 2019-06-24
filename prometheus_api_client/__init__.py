@@ -4,3 +4,4 @@ __title__ = "prometheus-connect"
 __version__ = "0.0.1"
 
 from .prometheus_connect import *
+from .metric import Metric
