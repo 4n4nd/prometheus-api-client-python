@@ -5,13 +5,14 @@ with open("README.md", "r") as fh:
 
 
 def get_install_requires():
-    with open('requirements.txt', 'r') as requirements_file:
+    with open("requirements.txt", "r") as requirements_file:
         res = requirements_file.readlines()
-        return [req.split(' ', maxsplit=1)[0] for req in res if req]
+        return [req.split(" ", maxsplit=1)[0] for req in res if req]
+
 
 setuptools.setup(
     name="prometheus-api-client",
-    version="0.0.1",
+    version="0.0.2",
     author="Anand Sanmukhani",
     author_email="asanmukh@redhat.com",
     description="A small python api to collect data from prometheus",
