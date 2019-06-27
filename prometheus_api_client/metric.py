@@ -21,15 +21,14 @@ class Metric:
     A Class for `Metric` object
 
     :param metric: (dict) A metric item from the list of metrics received from prometheus
-    :param oldest_data_datetime: (str) So any metric values in the dataframe that are older than
-                    this value will be deleted when new data is added to the dataframe using
+    :param oldest_data_datetime: (str) Any metric values in the dataframe that are older than \
+                    this value will be deleted when new data is added to the dataframe using \
                     the __add__("+") operator.
-                    Example: oldest_data_datetime="10d", will delete the metric data that is older
-                            than 10 days. The dataframe is pruned only when new data is added to it.
 
-                             oldest_data_datetime="23 May 2019 12:00:00"
-
-                             oldest_data_datetime="1561475156" can be set using the unix timestamp
+                    * `oldest_data_datetime="10d"`, will delete the metric data that is older \
+                    than 10 days. The dataframe is pruned only when new data is added to it. \n
+                    * `oldest_data_datetime="23 May 2019 12:00:00"`\n
+                    * `oldest_data_datetime="1561475156"` can also be set using the unix timestamp
 
     Example Usage:
         ``prom = PrometheusConnect()``
@@ -64,12 +63,9 @@ class Metric:
 
     def __eq__(self, other):
         """
-        overloading operator `=`
+        overloading operator ``=``
 
         Check whether two metrics are the same (are the same time-series regardless of their data)
-
-        :return: (bool) If two Metric objects belong to the same time-series,
-                 i.e. same name and label config, it will return True, else False
 
         Example Usage:
             ``metric_1 = Metric(metric_data_1)``
@@ -78,6 +74,8 @@ class Metric:
 
             ``print(metric_1 == metric_2) # will print True if they belong to the same time-series``
 
+        :return: (bool) If two Metric objects belong to the same time-series,
+                 i.e. same name and label config, it will return True, else False
         """
         return bool(
             (self.metric_name == other.metric_name) and (self.label_config == other.label_config)
@@ -101,18 +99,24 @@ class Metric:
 
     def __add__(self, other):
         """
-        overloading operator `+`
+        overloading operator ``+``,
         Add two metric objects for the same time-series
 
         Example Usage:
-            ``metric_1 = Metric(metric_data_1)``
+          .. code-block:: python
 
-            ``metric_2 = Metric(metric_data_2)``
+            metric_1 = Metric(metric_data_1)
+            metric_2 = Metric(metric_data_2)
+            metric_12 = metric_1 + metric_2 # will add the data in ``metric_2`` to ``metric_1``
+                                            # so if any other parameters are set in ``metric_1``
+                                            # will also be set in ``metric_12``
+                                            # (like ``oldest_data_datetime``)
 
-            ``metric_12 = metric_1 + metric_2`` # will add the data in metric_2 to metric_1
-                                                # so if any other parameters are set in metric_1
-                                                # will also be set in metric_12
-                                                # (like `oldest_data_datetime`)
+        :return: (`Metric`) Returns a `Metric` object with the combined metric data \
+        of the two added metrics
+
+        :raises: (TypeError) Raises an exception when two metrics being added are \
+        from different metric time-series
         """
         if self == other:
             new_metric = deepcopy(self)
