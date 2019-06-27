@@ -115,21 +115,26 @@ class Metric:
                                                 # (like `oldest_data_datetime`)
         """
         if self == other:
-            self.metric_values = self.metric_values.append(other.metric_values, ignore_index=True)
-            self.metric_values = self.metric_values.dropna()
-            self.metric_values = (
-                self.metric_values.drop_duplicates("ds")
+            new_metric = deepcopy(self)
+            new_metric.metric_values = new_metric.metric_values.append(
+                other.metric_values, ignore_index=True
+            )
+            new_metric.metric_values = new_metric.metric_values.dropna()
+            new_metric.metric_values = (
+                new_metric.metric_values.drop_duplicates("ds")
                 .sort_values(by=["ds"])
                 .reset_index(drop=True)
             )
             # if oldest_data_datetime is set, trim the dataframe and only keep the newer data
-            if self.oldest_data_datetime:
+            if new_metric.oldest_data_datetime:
                 # create a time range mask
-                mask = self.metric_values["ds"] >= dateparser.parse(str(self.oldest_data_datetime))
+                mask = new_metric.metric_values["ds"] >= dateparser.parse(
+                    str(new_metric.oldest_data_datetime)
+                )
                 # truncate the df within the mask
-                self.metric_values = self.metric_values.loc[mask]
+                new_metric.metric_values = new_metric.metric_values.loc[mask]
 
-            return self
+            return new_metric
 
         if self.metric_name != other.metric_name:
             error_string = "Different metric names"
