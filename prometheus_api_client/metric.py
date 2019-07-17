@@ -47,19 +47,26 @@ class Metric:
         Constructor for the Metric object
 
         """
-        self.metric_name = metric["metric"]["__name__"]
-        self.label_config = deepcopy(metric["metric"])
-        self.oldest_data_datetime = oldest_data_datetime
-        del self.label_config["__name__"]
+        if isinstance(metric, Metric):
+            # if metric is a Metric object, just copy the object and update its parameters
+            self.metric_name = metric.metric_name
+            self.label_config = metric.label_config
+            self.metric_values = metric.metric_values
+            self.oldest_data_datetime = oldest_data_datetime
+        else:
+            self.metric_name = metric["metric"]["__name__"]
+            self.label_config = deepcopy(metric["metric"])
+            self.oldest_data_datetime = oldest_data_datetime
+            del self.label_config["__name__"]
 
-        # if it is a single value metric change key name
-        if "value" in metric:
-            metric["values"] = [metric["value"]]
+            # if it is a single value metric change key name
+            if "value" in metric:
+                metric["values"] = [metric["value"]]
 
-        self.metric_values = pandas.DataFrame(metric["values"], columns=["ds", "y"]).apply(
-            pandas.to_numeric, args=({"errors": "coerce"})
-        )
-        self.metric_values["ds"] = pandas.to_datetime(self.metric_values["ds"], unit="s")
+            self.metric_values = pandas.DataFrame(metric["values"], columns=["ds", "y"]).apply(
+                pandas.to_numeric, args=({"errors": "coerce"})
+            )
+            self.metric_values["ds"] = pandas.to_datetime(self.metric_values["ds"], unit="s")
 
     def __eq__(self, other):
         """
