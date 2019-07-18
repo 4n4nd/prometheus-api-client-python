@@ -233,8 +233,8 @@ class PrometheusConnect:
 
         :param query: (str) This is a PromQL query, a few examples can be found
                         at https://prometheus.io/docs/prometheus/latest/querying/examples/
-                        
-        :param params: (dict) Optional dictionary containing GET parameters to be 
+
+        :param params: (dict) Optional dictionary containing GET parameters to be
                         sent along with the API request, such as "time"
 
         :Returns: (list) A list of metric data received in response of the query sent
