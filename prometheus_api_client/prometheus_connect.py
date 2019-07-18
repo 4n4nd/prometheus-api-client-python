@@ -224,7 +224,7 @@ class PrometheusConnect:
         return object_path
 
     @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES, wait_fixed=CONNECTION_RETRY_WAIT_TIME)
-    def custom_query(self, query: str):
+    def custom_query(self, query: str, params: dict = {}):
         """
         A method to send a custom query to a Prometheus Host.
 
@@ -233,6 +233,9 @@ class PrometheusConnect:
 
         :param query: (str) This is a PromQL query, a few examples can be found
                         at https://prometheus.io/docs/prometheus/latest/querying/examples/
+                        
+        :param params: (dict) Optional dictionary containing GET parameters to be 
+                        sent along with the API request, such as "time"
 
         :Returns: (list) A list of metric data received in response of the query sent
 
@@ -242,11 +245,12 @@ class PrometheusConnect:
         data = None
         query = str(query)
         # using the query API to get raw data
-        response = requests.get('{0}/api/v1/query'.format(self.url),
-                                params={'query': query
-                                        },
-                                verify=self.ssl_verification,
-                                headers=self.headers)
+        response = requests.get(
+            "{0}/api/v1/query".format(self.url),
+            params={**{"query": query}, **params},
+            verify=self.ssl_verification,
+            headers=self.headers,
+        )
         if response.status_code == 200:
             data = response.json()['data']['result']
         else:
