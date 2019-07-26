@@ -68,6 +68,10 @@ class Metric:
             )
             self.metric_values["ds"] = pandas.to_datetime(self.metric_values["ds"], unit="s")
 
+        # Set the metric start time and the metric end time
+        self.start_time = dateparser.parse(str(self.metric_values["ds"].head(1).values[0]))
+        self.end_time = dateparser.parse(str(self.metric_values["ds"].tail(1).values[0]))
+
     def __eq__(self, other):
         """
         overloading operator ``=``
@@ -144,6 +148,14 @@ class Metric:
                 )
                 # truncate the df within the mask
                 new_metric.metric_values = new_metric.metric_values.loc[mask]
+
+            # Update the metric start time and the metric end time for the new Metric
+            new_metric.start_time = dateparser.parse(
+                str(new_metric.metric_values["ds"].head(1).values[0])
+            )
+            new_metric.end_time = dateparser.parse(
+                str(new_metric.metric_values["ds"].tail(1).values[0])
+            )
 
             return new_metric
 
