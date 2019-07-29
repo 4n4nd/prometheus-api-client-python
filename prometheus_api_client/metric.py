@@ -4,6 +4,7 @@ A Class for metric object
 from copy import deepcopy
 import dateparser
 import pandas
+from datetime import datetime
 
 try:
     import matplotlib.pyplot as plt
@@ -68,9 +69,13 @@ class Metric:
             )
             self.metric_values["ds"] = pandas.to_datetime(self.metric_values["ds"], unit="s")
 
-        # Set the metric start time and the metric end time
-        self.start_time = dateparser.parse(str(self.metric_values["ds"].head(1).values[0]))
-        self.end_time = dateparser.parse(str(self.metric_values["ds"].tail(1).values[0]))
+        # Set the metric start time and the metric end time from timestamps in ns
+        self.start_time = datetime.fromtimestamp(
+            self.metric_values["ds"].head(1).values[0].astype(int) * (10 ** -9)
+        )
+        self.end_time = datetime.fromtimestamp(
+            self.metric_values["ds"].tail(1).values[0].astype(int) * (10 ** -9)
+        )
 
     def __eq__(self, other):
         """
@@ -150,11 +155,11 @@ class Metric:
                 new_metric.metric_values = new_metric.metric_values.loc[mask]
 
             # Update the metric start time and the metric end time for the new Metric
-            new_metric.start_time = dateparser.parse(
-                str(new_metric.metric_values["ds"].head(1).values[0])
+            new_metric.start_time = datetime.fromtimestamp(
+                new_metric.metric_values["ds"].head(1).values[0].astype(int) * (10 ** -9)
             )
-            new_metric.end_time = dateparser.parse(
-                str(new_metric.metric_values["ds"].tail(1).values[0])
+            new_metric.end_time = datetime.fromtimestamp(
+                new_metric.metric_values["ds"].tail(1).values[0].astype(int) * (10 ** -9)
             )
 
             return new_metric
