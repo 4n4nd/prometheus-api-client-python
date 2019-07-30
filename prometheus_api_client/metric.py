@@ -64,7 +64,7 @@ class Metric:
                 metric["values"] = [metric["value"]]
 
             self.metric_values = pandas.DataFrame(metric["values"], columns=["ds", "y"]).apply(
-                pandas.to_numeric, args=({"errors": "coerce"})
+                pandas.to_numeric, errors="raise"
             )
             self.metric_values["ds"] = pandas.to_datetime(self.metric_values["ds"], unit="s")
 
