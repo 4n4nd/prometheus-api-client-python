@@ -1,0 +1,8 @@
+---
+- project:
+    check:
+      jobs:
+        - "thoth-pytest"
+    gate:
+      jobs:
+        - "thoth-pytest"
