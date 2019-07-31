@@ -4,7 +4,6 @@ A Class for metric object
 from copy import deepcopy
 import dateparser
 import pandas
-from datetime import datetime
 
 try:
     import matplotlib.pyplot as plt
