@@ -30,9 +30,18 @@ class MetricsList(list):
 
         metric_object_list = []
         for i in metric_data_list:
-            metric_object = Metric(i)
-            if metric_object in metric_object_list:
-                metric_object_list[metric_object_list.index(metric_object)] += metric_object
+            # If it is a list of lists (for example: while reading from multiple json files)
+            if isinstance(i, list):
+                for metric in i:
+                    metric_object = Metric(metric)
+                    if metric_object in metric_object_list:
+                        metric_object_list[metric_object_list.index(metric_object)] += metric_object
+                    else:
+                        metric_object_list.append(metric_object)
             else:
-                metric_object_list.append(metric_object)
+                metric_object = Metric(i)
+                if metric_object in metric_object_list:
+                    metric_object_list[metric_object_list.index(metric_object)] += metric_object
+                else:
+                    metric_object_list.append(metric_object)
         super(MetricsList, self).__init__(metric_object_list)
