@@ -150,15 +150,15 @@ class PrometheusConnect:
         params = params or {}
         data = []
 
-        start = int(dateparser.parse(str(start_time)).timestamp())
-        end = int(dateparser.parse(str(end_time)).timestamp())
+        start = int(dateparser.parse(str(start_time), settings={"DATE_ORDER": "YMD"}).timestamp())
+        end = int(dateparser.parse(str(end_time), settings={"DATE_ORDER": "YMD"}).timestamp())
 
         if not chunk_size:
             chunk_seconds = int(end - start)
             chunk_size = str(int(chunk_seconds)) + "s"
         else:
-            chunk_seconds = (int(round((dateparser.parse('now') -
-                                        dateparser.parse(chunk_size)
+            chunk_seconds = (int(round((dateparser.parse('now', settings={"DATE_ORDER": "YMD"}) -
+                                        dateparser.parse(chunk_size, settings={"DATE_ORDER": "YMD"})
                                         ).total_seconds())))
 
         if int(end - start) < chunk_seconds:
@@ -234,7 +234,7 @@ class PrometheusConnect:
         :param end_timestamp: (str) timestamp in any format understood by dateparser
         :returns: (str) the generated path
         """
-        end_timestamp = dateparser.parse(str(end_timestamp))
+        end_timestamp = dateparser.parse(str(end_timestamp), settings={"DATE_ORDER": "YMD"})
         directory_name = end_timestamp.strftime("%Y%m%d")
         timestamp = end_timestamp.strftime("%Y%m%d%H%M")
         object_path = "./metrics/" + self.prometheus_host + "/" + \

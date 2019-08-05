@@ -144,7 +144,7 @@ class Metric:
             if new_metric.oldest_data_datetime:
                 # create a time range mask
                 mask = new_metric.metric_values["ds"] >= dateparser.parse(
-                    str(new_metric.oldest_data_datetime)
+                    str(new_metric.oldest_data_datetime), settings={"DATE_ORDER": "YMD"}
                 )
                 # truncate the df within the mask
                 new_metric.metric_values = new_metric.metric_values.loc[mask]
