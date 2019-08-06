@@ -2,7 +2,7 @@
 A Class for metric object
 """
 from copy import deepcopy
-import dateparser
+import datetime
 import pandas
 
 try:
@@ -21,14 +21,17 @@ class Metric:
     A Class for `Metric` object
 
     :param metric: (dict) A metric item from the list of metrics received from prometheus
-    :param oldest_data_datetime: (str) Any metric values in the dataframe that are older than \
-                    this value will be deleted when new data is added to the dataframe using \
-                    the __add__("+") operator.
+    :param oldest_data_datetime: (datetime|timedelta) Any metric values in the dataframe that are \
+                    older than this value will be deleted when new data is added to the dataframe \
+                    using the __add__("+") operator.
 
-                    * `oldest_data_datetime="10d"`, will delete the metric data that is older \
-                    than 10 days. The dataframe is pruned only when new data is added to it. \n
-                    * `oldest_data_datetime="23 May 2019 12:00:00"`\n
-                    * `oldest_data_datetime="1561475156"` can also be set using the unix timestamp
+                    * `oldest_data_datetime=datetime.timedelta(days=2)`, will delete the \
+                    metric data that is 2 days older than the latest metric. \
+                    The dataframe is pruned only when new data is added to it. \n
+                    * `oldest_data_datetime=datetime.datetime(2019,5,23,12,0)`, will delete \
+                    any data that is older than "23 May 2019 12:00:00" \n
+                    * `oldest_data_datetime=datetime.datetime.fromtimestamp(1561475156)` \
+                    can also be set using the unix timestamp
 
     Example Usage:
         ``prom = PrometheusConnect()``
@@ -38,7 +41,8 @@ class Metric:
         ``metric_data = prom.get_metric_range_data(metric_name='up', label_config=my_label_config)``
         ``Here metric_data is a list of metrics received from prometheus``
 
-        ``my_metric_object = Metric(metric_data[0], "10d") # only for the first item in the list``
+        ``# only for the first item in the list``
+        ``my_metric_object = Metric(metric_data[0], datetime.timedelta(days=10)) ``
 
     """
 
@@ -47,6 +51,15 @@ class Metric:
         Constructor for the Metric object
 
         """
+
+        if not isinstance(
+            oldest_data_datetime, (datetime.datetime, datetime.timedelta, type(None))
+        ):
+            # if it is neither a datetime object nor a timedelta object raise exception
+            raise TypeError(
+                "oldest_data_datetime can only be datetime.datetime/ datetime.timedelta or None"
+            )
+
         if isinstance(metric, Metric):
             # if metric is a Metric object, just copy the object and update its parameters
             self.metric_name = metric.metric_name
@@ -142,10 +155,14 @@ class Metric:
             )
             # if oldest_data_datetime is set, trim the dataframe and only keep the newer data
             if new_metric.oldest_data_datetime:
-                # create a time range mask
-                mask = new_metric.metric_values["ds"] >= dateparser.parse(
-                    str(new_metric.oldest_data_datetime)
-                )
+                if isinstance(new_metric.oldest_data_datetime, datetime.timedelta):
+                    # create a time range mask
+                    mask = new_metric.metric_values["ds"] >= (
+                        new_metric.metric_values.iloc[-1, 0] - abs(new_metric.oldest_data_datetime)
+                    )
+                else:
+                    # create a time range mask
+                    mask = new_metric.metric_values["ds"] >= new_metric.oldest_data_datetime
                 # truncate the df within the mask
                 new_metric.metric_values = new_metric.metric_values.loc[mask]
 
@@ -162,7 +179,9 @@ class Metric:
         raise TypeError("Cannot Add different metric types. " + error_string)
 
     def plot(self):
-
+        """
+        Plot a very simple line graph for the metric time-series
+        """
         if _MPL_FOUND:
             fig, axis = plt.subplots()
             axis.plot_date(self.metric_values.ds, self.metric_values.y, linestyle=":")
