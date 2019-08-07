@@ -75,6 +75,37 @@ class TestMetric(unittest.TestCase):
             "Incorrect End time after addition",
         )
 
+    def test_oldest_data_datetime_with_datetime(self):
+        with self.assertRaises(TypeError, msg="incorrect parameter type accepted"):
+            _ = Metric(self.raw_metrics_list[0][0], oldest_data_datetime="2d")
+
+        expected_start_time = Metric(self.raw_metrics_list[0][0]).metric_values.iloc[4, 0]
+        new_metric = Metric(
+            self.raw_metrics_list[0][0], oldest_data_datetime=expected_start_time
+        ) + Metric(self.raw_metrics_list[1][0])
+
+        self.assertEqual(
+            expected_start_time, new_metric.start_time, "Incorrect Start time after addition"
+        )
+        self.assertEqual(
+            expected_start_time,
+            new_metric.metric_values.iloc[0, 0],
+            "Incorrect Start time after addition (in df)",
+        )
+
+    def test_oldest_data_datetime_with_timedelta(self):
+        expected_start_time = Metric(self.raw_metrics_list[0][0]).metric_values.iloc[4, 0]
+        time_delta = (
+            Metric(self.raw_metrics_list[1][0]).metric_values.iloc[-1, 0]
+            - Metric(self.raw_metrics_list[0][0]).metric_values.iloc[4, 0]
+        )
+        new_metric = Metric(self.raw_metrics_list[0][0], oldest_data_datetime=time_delta) + Metric(
+            self.raw_metrics_list[1][0]
+        )
+        self.assertEqual(
+            expected_start_time, new_metric.start_time, "Incorrect Start time after addition"
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
