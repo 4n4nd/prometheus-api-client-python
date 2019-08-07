@@ -31,8 +31,9 @@ class PrometheusConnect:
         for the http requests made to the prometheus host
     """
 
-    def __init__(self, url: str = 'http://127.0.0.1:9090',
-                 headers: dict = None, disable_ssl: bool = False):
+    def __init__(
+        self, url: str = "http://127.0.0.1:9090", headers: dict = None, disable_ssl: bool = False
+    ):
         """
         Constructor for the class PrometheusConnect
         """
@@ -40,10 +41,9 @@ class PrometheusConnect:
         self.url = url
         self.prometheus_host = urlparse(self.url).netloc
         self._all_metrics = None
-        self.ssl_verification = (not disable_ssl)
+        self.ssl_verification = not disable_ssl
 
-    @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES,
-           wait_fixed=CONNECTION_RETRY_WAIT_TIME)
+    @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES, wait_fixed=CONNECTION_RETRY_WAIT_TIME)
     def all_metrics(self, params: dict = None):
         """
         Get the list of all the metrics that the prometheus host scrapes
@@ -55,24 +55,25 @@ class PrometheusConnect:
         :raises: (Http Response error) Raises an exception in case of a connection error
         """
         params = params or {}
-        response = requests.get('{0}/api/v1/label/__name__/values'.format(self.url),
-                                verify=self.ssl_verification,
-                                headers=self.headers,
-                                params=params,)
+        response = requests.get(
+            "{0}/api/v1/label/__name__/values".format(self.url),
+            verify=self.ssl_verification,
+            headers=self.headers,
+            params=params,
+        )
 
         if response.status_code == 200:
-            self._all_metrics = response.json()['data']
+            self._all_metrics = response.json()["data"]
         else:
-            raise Exception("HTTP Status Code {} ({})".format(
-                response.status_code,
-                response.content
-            ))
+            raise Exception(
+                "HTTP Status Code {} ({})".format(response.status_code, response.content)
+            )
         return self._all_metrics
 
-    @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES,
-           wait_fixed=CONNECTION_RETRY_WAIT_TIME)
+    @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES, wait_fixed=CONNECTION_RETRY_WAIT_TIME)
     def get_current_metric_value(
-            self, metric_name: str, label_config: dict = None, params: dict = None):
+        self, metric_name: str, label_config: dict = None, params: dict = None
+    ):
         """
         A method to get the current metric value for the specified metric
         and label configuration.
@@ -95,38 +96,39 @@ class PrometheusConnect:
         params = params or {}
         data = []
         if label_config:
-            label_list = [str(key + "=" + "'" + label_config[key] + "'")
-                          for key in label_config]
+            label_list = [str(key + "=" + "'" + label_config[key] + "'") for key in label_config]
             # print(label_list)
             query = metric_name + "{" + ",".join(label_list) + "}"
         else:
             query = metric_name
 
         # using the query API to get raw data
-        response = requests.get('{0}/api/v1/query'.format(self.url),
-                                params={**{"query": query}, **params},
-                                verify=self.ssl_verification,
-                                headers=self.headers)
+        response = requests.get(
+            "{0}/api/v1/query".format(self.url),
+            params={**{"query": query}, **params},
+            verify=self.ssl_verification,
+            headers=self.headers,
+        )
 
         if response.status_code == 200:
-            data += response.json()['data']['result']
+            data += response.json()["data"]["result"]
         else:
-            raise Exception("HTTP Status Code {} ({})".format(
-                response.status_code,
-                response.content
-            ))
+            raise Exception(
+                "HTTP Status Code {} ({})".format(response.status_code, response.content)
+            )
         return data
 
-    @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES,
-           wait_fixed=CONNECTION_RETRY_WAIT_TIME)
-    def get_metric_range_data(self,
-                              metric_name: str,
-                              label_config: dict = None,
-                              start_time: str = '10m',
-                              end_time: str = 'now',
-                              chunk_size: str = None,
-                              store_locally: bool = False,
-                              params: dict = None):
+    @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES, wait_fixed=CONNECTION_RETRY_WAIT_TIME)
+    def get_metric_range_data(
+        self,
+        metric_name: str,
+        label_config: dict = None,
+        start_time: str = "10m",
+        end_time: str = "now",
+        chunk_size: str = None,
+        store_locally: bool = False,
+        params: dict = None,
+    ):
         """
         A method to get the current metric value for the specified metric
         and label configuration.
@@ -157,16 +159,15 @@ class PrometheusConnect:
             chunk_seconds = int(end - start)
             chunk_size = str(int(chunk_seconds)) + "s"
         else:
-            chunk_seconds = (int(round((dateparser.parse('now') -
-                                        dateparser.parse(chunk_size)
-                                        ).total_seconds())))
+            chunk_seconds = int(
+                round((dateparser.parse("now") - dateparser.parse(chunk_size)).total_seconds())
+            )
 
         if int(end - start) < chunk_seconds:
             sys.exit("specified chunk_size is too big")
 
         if label_config:
-            label_list = [str(key + "=" + "'" + label_config[key] + "'")
-                          for key in label_config]
+            label_list = [str(key + "=" + "'" + label_config[key] + "'") for key in label_config]
             # print(label_list)
             query = metric_name + "{" + ",".join(label_list) + "}"
         else:
@@ -174,31 +175,33 @@ class PrometheusConnect:
 
         while start < end:
             # using the query API to get raw data
-            response = requests.get('{0}/api/v1/query'.format(self.url),
-                                    params={**{'query': query + '[' + chunk_size + ']',
-                                               'time': start + chunk_seconds
-                                               }, **params},
-                                    verify=self.ssl_verification,
-                                    headers=self.headers)
+            response = requests.get(
+                "{0}/api/v1/query".format(self.url),
+                params={
+                    **{"query": query + "[" + chunk_size + "]", "time": start + chunk_seconds},
+                    **params,
+                },
+                verify=self.ssl_verification,
+                headers=self.headers,
+            )
             if response.status_code == 200:
-                data += response.json()['data']['result']
+                data += response.json()["data"]["result"]
             else:
-                raise Exception("HTTP Status Code {} ({})".format(
-                    response.status_code,
-                    response.content
-                ))
+                raise Exception(
+                    "HTTP Status Code {} ({})".format(response.status_code, response.content)
+                )
             if store_locally:
                 # store it locally
-                self._store_metric_values_local(metric_name,
-                                                json.dumps(
-                                                    response.json()['data']['result']),
-                                                start + chunk_seconds)
+                self._store_metric_values_local(
+                    metric_name,
+                    json.dumps(response.json()["data"]["result"]),
+                    start + chunk_seconds,
+                )
 
             start += chunk_seconds
         return data
 
-    def _store_metric_values_local(
-            self, metric_name, values, end_timestamp, compressed=False):
+    def _store_metric_values_local(self, metric_name, values, end_timestamp, compressed=False):
         """
         Store metrics on the local filesystem, optionally  with bz2 compression
 
@@ -215,10 +218,10 @@ class PrometheusConnect:
         file_path = self._metric_filename(metric_name, end_timestamp)
 
         if compressed:
-            payload = bz2.compress(str(values).encode('utf-8'))
+            payload = bz2.compress(str(values).encode("utf-8"))
             file_path = file_path + ".bz2"
         else:
-            payload = (str(values).encode('utf-8'))
+            payload = str(values).encode("utf-8")
 
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, "wb") as file:
@@ -237,12 +240,20 @@ class PrometheusConnect:
         end_timestamp = dateparser.parse(str(end_timestamp))
         directory_name = end_timestamp.strftime("%Y%m%d")
         timestamp = end_timestamp.strftime("%Y%m%d%H%M")
-        object_path = "./metrics/" + self.prometheus_host + "/" + \
-            metric_name + "/" + directory_name + "/" + timestamp + ".json"
+        object_path = (
+            "./metrics/"
+            + self.prometheus_host
+            + "/"
+            + metric_name
+            + "/"
+            + directory_name
+            + "/"
+            + timestamp
+            + ".json"
+        )
         return object_path
 
-    @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES,
-           wait_fixed=CONNECTION_RETRY_WAIT_TIME)
+    @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES, wait_fixed=CONNECTION_RETRY_WAIT_TIME)
     def custom_query(self, query: str, params: dict = None):
         """
         A method to send a custom query to a Prometheus Host.
@@ -268,12 +279,11 @@ class PrometheusConnect:
             headers=self.headers,
         )
         if response.status_code == 200:
-            data = response.json()['data']['result']
+            data = response.json()["data"]["result"]
         else:
-            raise Exception("HTTP Status Code {} ({})".format(
-                response.status_code,
-                response.content
-            ))
+            raise Exception(
+                "HTTP Status Code {} ({})".format(response.status_code, response.content)
+            )
 
         return data
 
