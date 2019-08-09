@@ -7,8 +7,8 @@ import os
 import sys
 import json
 import logging
+from datetime import datetime, timedelta
 import requests
-import dateparser
 from retrying import retry
 
 # set up logging
@@ -97,7 +97,6 @@ class PrometheusConnect:
         data = []
         if label_config:
             label_list = [str(key + "=" + "'" + label_config[key] + "'") for key in label_config]
-            # print(label_list)
             query = metric_name + "{" + ",".join(label_list) + "}"
         else:
             query = metric_name
@@ -123,9 +122,9 @@ class PrometheusConnect:
         self,
         metric_name: str,
         label_config: dict = None,
-        start_time: str = "10m",
-        end_time: str = "now",
-        chunk_size: str = None,
+        start_time: datetime = (datetime.now() - timedelta(minutes=10)),
+        end_time: datetime = datetime.now(),
+        chunk_size: timedelta = None,
         store_locally: bool = False,
         params: dict = None,
     ):
@@ -136,10 +135,10 @@ class PrometheusConnect:
         :param metric_name: (str) The name of the metric.
         :param label_config: (dict) A dictionary specifying metric labels and their
             values.
-        :param start_time:  (str) A string that specifies the metric range start time.
-        :param end_time: (str) A string that specifies the metric range end time.
-        :param chunk_size: (str) Duration of metric data downloaded in one request. For
-            example, setting it to '3h' will download 3 hours worth of data in each
+        :param start_time:  (datetime) A datetime object that specifies the metric range start time.
+        :param end_time: (datetime) A datetime object that specifies the metric range end time.
+        :param chunk_size: (timedelta) Duration of metric data downloaded in one request. For
+            example, setting it to timedelta(hours=3) will download 3 hours worth of data in each
             request made to the prometheus host
         :param store_locally: (bool) If set to True, will store data locally at,
             `"./metrics/hostname/metric_date/name_time.json.bz2"`
@@ -152,33 +151,44 @@ class PrometheusConnect:
         params = params or {}
         data = []
 
-        start = int(dateparser.parse(str(start_time)).timestamp())
-        end = int(dateparser.parse(str(end_time)).timestamp())
+        _LOGGER.debug("start_time: %s", start_time)
+        _LOGGER.debug("end_time: %s", end_time)
+        _LOGGER.debug("chunk_size: %s", chunk_size)
+
+        if not (isinstance(start_time, datetime) and isinstance(end_time, datetime)):
+            raise TypeError("start_time and end_time can only be of type datetime.datetime")
 
         if not chunk_size:
-            chunk_seconds = int(end - start)
-            chunk_size = str(int(chunk_seconds)) + "s"
-        else:
-            chunk_seconds = int(
-                round((dateparser.parse("now") - dateparser.parse(chunk_size)).total_seconds())
-            )
+            chunk_size = end_time - start_time
+        if not isinstance(chunk_size, timedelta):
+            raise TypeError("chunk_size can only be of type datetime.timedelta")
 
-        if int(end - start) < chunk_seconds:
+        start = round(start_time.timestamp())
+        end = round(end_time.timestamp())
+
+        if (end_time - start_time).total_seconds() < chunk_size.total_seconds():
             sys.exit("specified chunk_size is too big")
+        chunk_seconds = round(chunk_size.total_seconds())
 
         if label_config:
             label_list = [str(key + "=" + "'" + label_config[key] + "'") for key in label_config]
-            # print(label_list)
             query = metric_name + "{" + ",".join(label_list) + "}"
         else:
             query = metric_name
+        _LOGGER.debug("Prometheus Query: %s", query)
 
         while start < end:
+            if start + chunk_seconds > end:
+                chunk_seconds = end - start
+
             # using the query API to get raw data
             response = requests.get(
                 "{0}/api/v1/query".format(self.url),
                 params={
-                    **{"query": query + "[" + chunk_size + "]", "time": start + chunk_seconds},
+                    **{
+                        "query": query + "[" + str(chunk_seconds) + "s" + "]",
+                        "time": start + chunk_seconds,
+                    },
                     **params,
                 },
                 verify=self.ssl_verification,
@@ -207,7 +217,8 @@ class PrometheusConnect:
 
         :param metric_name: (str) the name of the metric being saved
         :param values: (str) metric data in JSON string format
-        :param end_timestamp: (str) timestamp in any format understood by dateparser
+        :param end_timestamp: (int) timestamp in any format understood by \
+            datetime.datetime.fromtimestamp()
         :param compressed: (bool) whether or not to apply bz2 compression
         :returns: (str) path to the saved metric file
         """
@@ -229,15 +240,16 @@ class PrometheusConnect:
 
         return file_path
 
-    def _metric_filename(self, metric_name: str, end_timestamp: str):
+    def _metric_filename(self, metric_name: str, end_timestamp: int):
         """
         Adds a timestamp to the filename before it is stored
 
         :param metric_name: (str) the name of the metric being saved
-        :param end_timestamp: (str) timestamp in any format understood by dateparser
+        :param end_timestamp: (int) timestamp in any format understood by \
+            datetime.datetime.fromtimestamp()
         :returns: (str) the generated path
         """
-        end_timestamp = dateparser.parse(str(end_timestamp))
+        end_timestamp = datetime.fromtimestamp(end_timestamp)
         directory_name = end_timestamp.strftime("%Y%m%d")
         timestamp = end_timestamp.strftime("%Y%m%d%H%M")
         object_path = (
@@ -286,15 +298,3 @@ class PrometheusConnect:
             )
 
         return data
-
-
-def pretty_print_metric(metric_data):
-    """
-    A function to pretty print the metric data downloaded using class PrometheusConnect.
-
-    :param metric_data: (list) This is the metric data list returned from methods
-        get_metric_range_data and get_current_metric_value
-    """
-    data = metric_data
-    for metric in data:
-        print(json.dumps(metric, indent=4, sort_keys=True))
