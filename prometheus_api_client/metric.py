@@ -13,7 +13,6 @@ try:
     _MPL_FOUND = True
 except ImportError as exce:
     _MPL_FOUND = False
-    print("WARNING: Plotting will not work as matplotlib was not found")
 
 
 class Metric:
