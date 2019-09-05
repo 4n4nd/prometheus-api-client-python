@@ -1,0 +1,12 @@
+- project:
+    check:
+      jobs:
+        - "thoth-coala"
+    gate:
+      queue: "aicoe/prometheus"
+      jobs:
+        - "thoth-coala"
+    kebechet-auto-gate:
+      queue: "aicoe/prometheus"
+      jobs:
+        - "thoth-coala"
