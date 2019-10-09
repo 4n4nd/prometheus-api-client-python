@@ -1,8 +1,15 @@
----
 - project:
     check:
       jobs:
+        - "thoth-coala"
         - "thoth-pytest"
     gate:
+      queue: "aicoe/prometheus"
       jobs:
+        - "thoth-coala"
+        - "thoth-pytest"
+    kebechet-auto-gate:
+      queue: "aicoe/prometheus"
+      jobs:
+        - "thoth-coala"
         - "thoth-pytest"

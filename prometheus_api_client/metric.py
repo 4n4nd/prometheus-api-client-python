@@ -1,6 +1,4 @@
-"""
-A Class for metric object
-"""
+"""A Class for metric object."""
 from copy import deepcopy
 import datetime
 import pandas
@@ -16,8 +14,8 @@ except ImportError as exce:
 
 
 class Metric:
-    """
-    A Class for `Metric` object
+    r"""
+    A Class for `Metric` object.
 
     :param metric: (dict) A metric item from the list of metrics received from prometheus
     :param oldest_data_datetime: (datetime|timedelta) Any metric values in the dataframe that are \
@@ -46,11 +44,7 @@ class Metric:
     """
 
     def __init__(self, metric, oldest_data_datetime=None):
-        """
-        Constructor for the Metric object
-
-        """
-
+        """Constructor for the Metric object."""
         if not isinstance(
             oldest_data_datetime, (datetime.datetime, datetime.timedelta, type(None))
         ):
@@ -86,7 +80,7 @@ class Metric:
 
     def __eq__(self, other):
         """
-        overloading operator ``=``
+        Overloading operator ``=``.
 
         Check whether two metrics are the same (are the same time-series regardless of their data)
 
@@ -106,7 +100,7 @@ class Metric:
 
     def __str__(self):
         """
-        This will make it print in a cleaner way when print function is used on a Metric object
+        Make it print in a cleaner way when print function is used on a Metric object.
 
         Example Usage:
             ``metric_1 = Metric(metric_data_1)``
@@ -121,8 +115,9 @@ class Metric:
         return "{" + "\n" + name + labels + values + "\n" + "}"
 
     def __add__(self, other):
-        """
-        overloading operator ``+``,
+        r"""
+        Overloading operator ``+``.
+
         Add two metric objects for the same time-series
 
         Example Usage:
@@ -178,9 +173,7 @@ class Metric:
         raise TypeError("Cannot Add different metric types. " + error_string)
 
     def plot(self):
-        """
-        Plot a very simple line graph for the metric time-series
-        """
+        """Plot a very simple line graph for the metric time-series."""
         if _MPL_FOUND:
             fig, axis = plt.subplots()
             axis.plot_date(self.metric_values.ds, self.metric_values.y, linestyle=":")

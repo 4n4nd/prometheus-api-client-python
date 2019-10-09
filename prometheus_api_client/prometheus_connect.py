@@ -1,6 +1,4 @@
-"""
-A Class for collection of metrics from a Prometheus Host.
-"""
+"""A Class for collection of metrics from a Prometheus Host."""
 from urllib.parse import urlparse
 import bz2
 import os
@@ -22,7 +20,7 @@ CONNECTION_RETRY_WAIT_TIME = 1000
 
 class PrometheusConnect:
     """
-    A Class for collection of metrics from a Prometheus Host
+    A Class for collection of metrics from a Prometheus Host.
 
     :param url: (str) url for the prometheus host
     :param headers: (dict) A dictionary of http headers to be used to communicate with
@@ -34,9 +32,7 @@ class PrometheusConnect:
     def __init__(
         self, url: str = "http://127.0.0.1:9090", headers: dict = None, disable_ssl: bool = False
     ):
-        """
-        Constructor for the class PrometheusConnect
-        """
+        """Constructor for the class PrometheusConnect."""
         self.headers = headers
         self.url = url
         self.prometheus_host = urlparse(self.url).netloc
@@ -46,7 +42,7 @@ class PrometheusConnect:
     @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES, wait_fixed=CONNECTION_RETRY_WAIT_TIME)
     def all_metrics(self, params: dict = None):
         """
-        Get the list of all the metrics that the prometheus host scrapes
+        Get the list of all the metrics that the prometheus host scrapes.
 
         :param params: (dict) Optional dictionary containing GET parameters to be
             sent along with the API request, such as "time"
@@ -74,9 +70,8 @@ class PrometheusConnect:
     def get_current_metric_value(
         self, metric_name: str, label_config: dict = None, params: dict = None
     ):
-        """
-        A method to get the current metric value for the specified metric
-        and label configuration.
+        r"""
+        A method to get the current metric value for the specified metric and label configuration.
 
         :param metric_name: (str) The name of the metric
         :param label_config: (dict) A dictionary that specifies metric labels and their
@@ -128,9 +123,8 @@ class PrometheusConnect:
         store_locally: bool = False,
         params: dict = None,
     ):
-        """
-        A method to get the current metric value for the specified metric
-        and label configuration.
+        r"""
+        A method to get the current metric value for the specified metric and label configuration.
 
         :param metric_name: (str) The name of the metric.
         :param label_config: (dict) A dictionary specifying metric labels and their
@@ -212,8 +206,8 @@ class PrometheusConnect:
         return data
 
     def _store_metric_values_local(self, metric_name, values, end_timestamp, compressed=False):
-        """
-        Store metrics on the local filesystem, optionally  with bz2 compression
+        r"""
+        Store metrics on the local filesystem, optionally  with bz2 compression.
 
         :param metric_name: (str) the name of the metric being saved
         :param values: (str) metric data in JSON string format
@@ -241,8 +235,8 @@ class PrometheusConnect:
         return file_path
 
     def _metric_filename(self, metric_name: str, end_timestamp: int):
-        """
-        Adds a timestamp to the filename before it is stored
+        r"""
+        Add a timestamp to the filename before it is stored.
 
         :param metric_name: (str) the name of the metric being saved
         :param end_timestamp: (int) timestamp in any format understood by \

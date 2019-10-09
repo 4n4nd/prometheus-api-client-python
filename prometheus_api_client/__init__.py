@@ -1,4 +1,4 @@
-""" A collection of tools to collect and manipulate prometheus metrics"""
+"""A collection of tools to collect and manipulate prometheus metrics."""
 
 __title__ = "prometheus-connect"
 __version__ = "0.0.2b4"

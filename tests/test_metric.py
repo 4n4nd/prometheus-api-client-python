@@ -1,3 +1,4 @@
+"""unit tests for Metrics Class."""
 import unittest
 import json
 import os
@@ -6,6 +7,8 @@ from prometheus_api_client import Metric
 
 
 class TestMetric(unittest.TestCase):
+    """unit tests for Metrics Class."""
+
     def setUp(self):
         """
         read metrics stored as jsons in './tests/metrics'
@@ -63,6 +66,7 @@ class TestMetric(unittest.TestCase):
             _ = Metric(self.raw_metrics_list[0][0]) + Metric(self.raw_metrics_list[0][1])
 
         sum_metric = Metric(self.raw_metrics_list[0][0]) + Metric(self.raw_metrics_list[1][0])
+        print(sum_metric)
         self.assertIsInstance(sum_metric, Metric, msg="The sum is not a Metric")
         self.assertEqual(
             sum_metric.start_time,
