@@ -23,6 +23,7 @@ class MetricsList(list):
     """
 
     def __init__(self, metric_data_list):
+        """Class MetricsList constructor."""
         # if the input is not a list
         if not isinstance(metric_data_list, list):
             # make it into a list
