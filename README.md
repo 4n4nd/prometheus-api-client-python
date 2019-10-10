@@ -1,17 +1,17 @@
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/4f6e655e936c4d54b838317bc4414017)](https://www.codacy.com/app/4n4nd/prometheus-connect?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=4n4nd/prometheus-connect&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7d838be9b51e4daaa20be1772f5c9ad2)](https://www.codacy.com/manual/4n4nd/prometheus-api-client-python?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=AICoE/prometheus-api-client-python&amp;utm_campaign=Badge_Grade)
 # prometheus-api-client
 
-A python wrapper for the prometheus http api
+A python wrapper for the prometheus http api and some tools for metrics processing.
 
 ## Installation
 To install the latest release: 
 
-`pip install prometheus-api-client==0.0.2`
+`pip install prometheus-api-client`
 
 To install directly from this branch:
 
-`pip install https://github.com/AICoE/prometheus-api-client-python/zipball/v0.0.2`
+`pip install https://github.com/AICoE/prometheus-api-client-python/zipball/master`
 
 ## Documentation
 
-Docs: [https://prometheus-api-client-python.readthedocs.io/en/v0.0.2/source/prometheus_api_client.html]
+Docs: [https://prometheus-api-client-python.readthedocs.io/source/prometheus_api_client.html]
