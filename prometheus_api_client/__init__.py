@@ -1,7 +1,7 @@
 """A collection of tools to collect and manipulate prometheus metrics."""
 
 __title__ = "prometheus-connect"
-__version__ = "0.0.2b4"
+__version__ = "0.2.0"
 
 from .prometheus_connect import *
 from .metric import Metric
