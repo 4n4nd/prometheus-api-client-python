@@ -2,14 +2,21 @@
     check:
       jobs:
         - "thoth-coala"
-        - "thoth-pytest"
+        - thoth-pytest:
+            vars:
+              PROM_URL: "http://prometheus-route-aiops-prod-prometheus-predict.cloud.paas.psi.redhat.com/"
+
     gate:
       queue: "aicoe/prometheus"
       jobs:
         - "thoth-coala"
-        - "thoth-pytest"
+        - thoth-pytest:
+            vars:
+              PROM_URL: "http://prometheus-route-aiops-prod-prometheus-predict.cloud.paas.psi.redhat.com/"
     kebechet-auto-gate:
       queue: "aicoe/prometheus"
       jobs:
         - "thoth-coala"
-        - "thoth-pytest"
+        - thoth-pytest:
+            vars:
+              PROM_URL: "http://prometheus-route-aiops-prod-prometheus-predict.cloud.paas.psi.redhat.com/"
