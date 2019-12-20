@@ -9,6 +9,9 @@ from datetime import datetime, timedelta
 import requests
 from retrying import retry
 
+from .exceptions import PrometheusApiClientException
+
+
 # set up logging
 _LOGGER = logging.getLogger(__name__)
 
@@ -107,7 +110,7 @@ class PrometheusConnect:
         if response.status_code == 200:
             data += response.json()["data"]["result"]
         else:
-            raise Exception(
+            raise PrometheusApiClientException(
                 "HTTP Status Code {} ({})".format(response.status_code, response.content)
             )
         return data
@@ -191,7 +194,7 @@ class PrometheusConnect:
             if response.status_code == 200:
                 data += response.json()["data"]["result"]
             else:
-                raise Exception(
+                raise PrometheusApiClientException(
                     "HTTP Status Code {} ({})".format(response.status_code, response.content)
                 )
             if store_locally:
@@ -287,7 +290,7 @@ class PrometheusConnect:
         if response.status_code == 200:
             data = response.json()["data"]["result"]
         else:
-            raise Exception(
+            raise PrometheusApiClientException(
                 "HTTP Status Code {} ({})".format(response.status_code, response.content)
             )
 
@@ -330,7 +333,7 @@ class PrometheusConnect:
         if response.status_code == 200:
             data = response.json()["data"]["result"]
         else:
-            raise Exception(
+            raise PrometheusApiClientException(
                 "HTTP Status Code {} ({})".format(response.status_code, response.content)
             )
 
