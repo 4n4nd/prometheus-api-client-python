@@ -44,7 +44,8 @@ class ResponseMock(HTTMock):
             self.requests.append(request)
         return resp
 
-    def __init__(self, *args, log_requests=True, **kwargs):
+    def __init__(self, *args, **kwargs):
+        log_requests = kwargs.pop('log_requests', True)
         handler = mock_response(*args, **kwargs)
         self.log_requests = log_requests
         self.requests = []
@@ -53,9 +54,9 @@ class ResponseMock(HTTMock):
 
 class BaseMockedNetworkTestcase(TestCase):
 
-    def run(self, *args, **kwargs):
+    def run(self, result=None):
         with ResponseMock('BOOM!', status_code=403):
-            return super().run(*args, **kwargs)
+            return super().run(result)
 
     @property
     def mock_response(self):
