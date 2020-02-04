@@ -2,11 +2,13 @@
 Test module for class PrometheusConnect
 """
 import unittest
+import pytest
 import os
 from datetime import datetime, timedelta
 from prometheus_api_client import MetricsList, PrometheusConnect
 
 
+@pytest.mark.e2e
 class TestPrometheusConnect(unittest.TestCase):
     """
     Test module for class PrometheusConnect
