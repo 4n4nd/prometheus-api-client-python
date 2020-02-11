@@ -9,6 +9,9 @@ from datetime import datetime, timedelta
 import requests
 from retrying import retry
 
+from .exceptions import PrometheusApiClientException
+
+
 # set up logging
 _LOGGER = logging.getLogger(__name__)
 
@@ -48,7 +51,9 @@ class PrometheusConnect:
             sent along with the API request, such as "time"
         :returns: (list) A list of names of all the metrics available from the
             specified prometheus host
-        :raises: (Http Response error) Raises an exception in case of a connection error
+        :raises:
+            (RequestException) Raises an exception in case of a connection error
+            (PrometheusApiClientException) Raises in case of non 200 response status code
         """
         params = params or {}
         response = requests.get(
@@ -61,7 +66,7 @@ class PrometheusConnect:
         if response.status_code == 200:
             self._all_metrics = response.json()["data"]
         else:
-            raise Exception(
+            raise PrometheusApiClientException(
                 "HTTP Status Code {} ({})".format(response.status_code, response.content)
             )
         return self._all_metrics
@@ -79,7 +84,9 @@ class PrometheusConnect:
         :param params: (dict) Optional dictionary containing GET parameters to be sent
             along with the API request, such as "time"
         :returns: (list) A list of current metric values for the specified metric
-        :raises: (Http Response error) Raises an exception in case of a connection error
+        :raises:
+            (RequestException) Raises an exception in case of a connection error
+            (PrometheusApiClientException) Raises in case of non 200 response status code
 
         Example Usage:
             ``prom = PrometheusConnect()``
@@ -107,7 +114,7 @@ class PrometheusConnect:
         if response.status_code == 200:
             data += response.json()["data"]["result"]
         else:
-            raise Exception(
+            raise PrometheusApiClientException(
                 "HTTP Status Code {} ({})".format(response.status_code, response.content)
             )
         return data
@@ -140,7 +147,10 @@ class PrometheusConnect:
             sent along with the API request, such as "time"
         :return: (list) A list of metric data for the specified metric in the given time
             range
-        :raises: (Exception) Raises an exception in case of a connection error
+        :raises:
+            (RequestException) Raises an exception in case of a connection error
+            (PrometheusApiClientException) Raises in case of non 200 response status code
+
         """
         params = params or {}
         data = []
@@ -191,7 +201,7 @@ class PrometheusConnect:
             if response.status_code == 200:
                 data += response.json()["data"]["result"]
             else:
-                raise Exception(
+                raise PrometheusApiClientException(
                     "HTTP Status Code {} ({})".format(response.status_code, response.content)
                 )
             if store_locally:
@@ -272,7 +282,9 @@ class PrometheusConnect:
         :param params: (dict) Optional dictionary containing GET parameters to be
             sent along with the API request, such as "time"
         :returns: (list) A list of metric data received in response of the query sent
-        :raises: (Exception) Raises an exception in case of a connection error
+        :raises:
+            (RequestException) Raises an exception in case of a connection error
+            (PrometheusApiClientException) Raises in case of non 200 response status code
         """
         params = params or {}
         data = None
@@ -287,7 +299,7 @@ class PrometheusConnect:
         if response.status_code == 200:
             data = response.json()["data"]["result"]
         else:
-            raise Exception(
+            raise PrometheusApiClientException(
                 "HTTP Status Code {} ({})".format(response.status_code, response.content)
             )
 
@@ -309,7 +321,9 @@ class PrometheusConnect:
         :param params: (dict) Optional dictionary containing GET parameters to be
             sent along with the API request, such as "timeout"
         :returns: (dict) A dict of metric data received in response of the query sent
-        :raises: (Exception) Raises an exception in case of a connection error
+        :raises:
+            (RequestException) Raises an exception in case of a connection error
+            (PrometheusApiClientException) Raises in case of non 200 response status code
         """
         start = round(start_time.timestamp())
         end = round(end_time.timestamp())
@@ -330,7 +344,7 @@ class PrometheusConnect:
         if response.status_code == 200:
             data = response.json()["data"]["result"]
         else:
-            raise Exception(
+            raise PrometheusApiClientException(
                 "HTTP Status Code {} ({})".format(response.status_code, response.content)
             )
 

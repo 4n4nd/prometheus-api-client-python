@@ -4,7 +4,12 @@ Test module for class PrometheusConnect
 import unittest
 import os
 from datetime import datetime, timedelta
-from prometheus_api_client import MetricsList, PrometheusConnect
+
+import requests
+
+from prometheus_api_client import MetricsList, PrometheusConnect, PrometheusApiClientException
+
+from .mocked_network import BaseMockedNetworkTestcase
 
 
 class TestPrometheusConnect(unittest.TestCase):
@@ -102,3 +107,64 @@ class TestPrometheusConnect(unittest.TestCase):
             _ = self.pc.get_metric_range_data(
                 metric_name="up", start_time=start_time, end_time=end_time, chunk_size="10m"
             )
+
+
+class TestPrometheusConnectWithMockedNetwork(BaseMockedNetworkTestcase):
+    """
+    Network is blocked in this testcase, see base class
+    """
+
+    def setUp(self):
+        self.pc = PrometheusConnect(url='http://doesnt_matter.xyz', disable_ssl=True)
+
+    def test_network_is_blocked(self):
+        resp = requests.get('https://google.com')
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.text, 'BOOM!')
+
+    def test_how_mock_prop_works(self):
+        with self.mock_response('kekekeke', status_code=500) as handler:
+            self.assertEqual(len(handler.requests), 0)
+            resp = requests.get('https://redhat.com')
+            self.assertEqual(resp.status_code, 500)
+            self.assertEqual(resp.text, 'kekekeke')
+
+            self.assertEqual(len(handler.requests), 1)
+            request = handler.requests[0]
+            self.assertEqual(request.url, 'https://redhat.com/')
+
+    def test_unauthorized(self):
+        with self.mock_response("Unauthorized", status_code=403):
+            with self.assertRaises(PrometheusApiClientException) as exc:
+                self.pc.all_metrics()
+        self.assertEqual("HTTP Status Code 403 (b'Unauthorized')", str(exc.exception))
+
+    def test_broken_responses(self):
+        with self.assertRaises(PrometheusApiClientException) as exc:
+            self.pc.all_metrics()
+        self.assertEqual("HTTP Status Code 403 (b'BOOM!')", str(exc.exception))
+
+        with self.assertRaises(PrometheusApiClientException) as exc:
+            self.pc.get_current_metric_value("metric")
+        self.assertEqual("HTTP Status Code 403 (b'BOOM!')", str(exc.exception))
+
+        with self.assertRaises(PrometheusApiClientException) as exc:
+            self.pc.get_metric_range_data("metric")
+        self.assertEqual("HTTP Status Code 403 (b'BOOM!')", str(exc.exception))
+
+        with self.assertRaises(PrometheusApiClientException) as exc:
+            self.pc.custom_query_range("query", datetime.now(), datetime.now(), "1")
+        self.assertEqual("HTTP Status Code 403 (b'BOOM!')", str(exc.exception))
+
+        with self.assertRaises(PrometheusApiClientException) as exc:
+            self.pc.custom_query("query")
+        self.assertEqual("HTTP Status Code 403 (b'BOOM!')", str(exc.exception))
+
+    def test_all_metrics_method(self):
+        all_metrics_payload = {"status": "success", "data": ["up", "alerts"]}
+
+        with self.mock_response(all_metrics_payload) as handler:
+            self.assertTrue(len(self.pc.all_metrics()))
+            self.assertEqual(handler.call_count, 1)
+            request = handler.requests[0]
+            self.assertEqual(request.path_url, "/api/v1/label/__name__/values")

@@ -29,6 +29,13 @@ prometheus\_api\_client.prometheus\_connect module
    :undoc-members:
    :show-inheritance:
 
+prometheus\_api\_client.exceptions module
+--------------------------------------------------
+
+.. automodule:: prometheus_api_client.exceptions
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------
