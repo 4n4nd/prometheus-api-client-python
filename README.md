@@ -1,6 +1,6 @@
 # prometheus-api-client
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7d838be9b51e4daaa20be1772f5c9ad2)](https://www.codacy.com/manual/4n4nd/prometheus-api-client-python?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=AICoE/prometheus-api-client-python&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7d838be9b51e4daaa20be1772f5c9ad2)](https://www.codacy.com/manual/4n4nd/prometheus-api-client-python?utm_source=github.com&utm_medium=referral&utm_content=AICoE/prometheus-api-client-python&utm_campaign=Badge_Grade)
 
 A Python wrapper for the Prometheus http api and some tools for metrics processing.
 
@@ -16,4 +16,4 @@ To install directly from this branch:
 
 ## Links
 
-* [Documentation](https://prometheus-api-client-python.readthedocs.io/source/prometheus_api_client.html)
+- [Documentation](https://prometheus-api-client-python.readthedocs.io/source/prometheus_api_client.html)
