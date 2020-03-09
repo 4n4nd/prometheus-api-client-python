@@ -51,7 +51,7 @@ class MetricSnapshotDataFrame(DataFrame):
         dtype: Optional[Dtype] = None,
         copy: bool = False,
     ):
-        """Constructor for MetricSnapshotDataFrame class"""
+        """Constructor for MetricSnapshotDataFrame class."""
         if data is not None:
             # if just a single json instead of list/set/other sequence of jsons,
             # treat as list with single entry
