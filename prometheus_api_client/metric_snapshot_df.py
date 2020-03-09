@@ -1,11 +1,13 @@
+"""A pandas.DataFrame subclass for Prometheus query response."""
 from pandas import DataFrame
 from pandas._typing import Axes, Dtype
 from typing import Optional, Sequence
 
 
 class MetricSnapshotDataFrame(DataFrame):
-    """Class to format and represent list of jsons (return by Prometheus as the
-    response to a query) in a pandas DataFrame.
+    """Subclass to format and represent Prometheus query response as pandas.DataFrame.
+
+    Assumes response is either a json or sequence of jsons.
 
     This is different than passing raw list of jsons to pandas.DataFrame in that it
     unpacks metric label values, extracts (first or last) timestamp-value pair (if
@@ -37,7 +39,9 @@ class MetricSnapshotDataFrame(DataFrame):
           | up       | cluster_id_1 | label_2_value_3 | 1577836800 | 1     |
           +-------------------------+-----------------+------------+-------+
           '''
+
     """
+
     def __init__(
         self,
         data=None,
@@ -47,16 +51,15 @@ class MetricSnapshotDataFrame(DataFrame):
         dtype: Optional[Dtype] = None,
         copy: bool = False,
     ):
+        """Constructor for MetricSnapshotDataFrame class"""
         if data is not None:
             # if just a single json instead of list/set/other sequence of jsons,
             # treat as list with single entry
             if not isinstance(data, Sequence):
                 data = [data]
 
-            assert ts_values_keep in (
-                "first",
-                "last"
-            ), "ts_values_keep must be one of 'first' and 'last'"
+            if ts_values_keep not in ("first", "last"):
+                raise ValueError("ts_values_keep must be one of 'first' and 'last'")
 
             # index corresponding to which ts-value pair to extract
             n = -1 if ts_values_keep == "last" else 0
