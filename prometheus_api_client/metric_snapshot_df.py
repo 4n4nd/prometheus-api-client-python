@@ -14,14 +14,18 @@ class MetricSnapshotDataFrame(DataFrame):
     multiple pairs are retuned), and concats them before passing to the pandas
     DataFrame constructor.
 
-    :param data: (list|json) A single metric (json with keys "metric" and
-                 "values"/"value") or list of such metrics received from Prometheus as
-                 a response to query
-    :param ts_values_keep: (str) If several timestamp-value tuples are returned for a
-                 given metric + label config, determine which one to keep. Currently
-                 only supports 'first', 'last'.
-    :param args : same args as pandas.DataFrame constructor
-    :param kwargs : same kwargs as pandas.DataFrame constructor
+    Some argument descriptions in this docstring were copied from pandas.core.frame.DataFrame.
+
+    :param data: (list|json) A single metric (json with keys "metric" and "values"/"value")
+        or list of such metrics received from Prometheus as a response to query
+    :param ts_values_keep: (str) If several timestamp-value tuples are returned for a given
+        metric + label config, determine which one to keep. Currently only supports 'first', 'last'.
+    :param index: (pandas.Index|array-like) Index to use for resulting dataframe. Will default to
+                 pandas.RangeIndex if no indexing information part of input data and no index provided.
+    :param columns: (pandas.Index|array-like) Column labels to use for resulting dataframe. Will
+                 default to list of labels + "timestamp" + "value" if not provided.
+    :param dtype: (dtype) default None. Data type to force. Only a single dtype is allowed. If None, infer.
+    :param copy: (bool) default False. Copy data from inputs. Only affects DataFrame / 2d ndarray input.
 
     Example Usage:
       .. code-block:: python

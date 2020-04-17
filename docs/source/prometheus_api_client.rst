@@ -37,6 +37,14 @@ prometheus\_api\_client.exceptions module
    :undoc-members:
    :show-inheritance:
 
+prometheus\_api\_client.metric\_snapshot\_df module
+---------------------------------------------------
+
+.. automodule:: prometheus_api_client.metric_snapshot_df
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 
