@@ -15,17 +15,6 @@ class Metric_aggregation:
         :param values: (list) A list of values to perform operation on.
         These are the metric values(int|float)
 
-        Example Usage:
-      .. code-block:: python
-
-          prom = PrometheusConnect()
-          operations = ["sum", "max", "percentile_95", "percentile_50"]
-          query = go_gc_duration_seconds
-          aggregation_object = Metric_aggregation(values, operations)
-          aggregated_values = aggregation_object.process_values()
-
-          This returns the dict of aggregated values.
-
         """
 
     def __init__(self, values, operations):
