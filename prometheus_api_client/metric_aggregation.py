@@ -15,7 +15,7 @@ class MetricAggregation:
     Available operations - sum, max, min, variance, nth percentile, deviation
     and average.
     :param values: (list) A list of values to perform operation on.
-    These are the metric values(int|float)
+    These are the metric values(int|float).
 
     """
 
@@ -40,39 +40,38 @@ class MetricAggregation:
         self.output = {}
 
     def get_max(self):
-        """Finds the maximum value"""
+        """Find the maximum value."""
         self.output['max'] = max(self.values)
 
     def get_min(self):
-        """Finds the minimum value"""
+        """Find the minimum value."""
         self.output['min'] = min(self.values)
 
     def get_sum(self):
-        """Finds the sum of the values"""
+        """Find the sum of the values."""
         self.output['sum'] = sum(self.values)
 
     def get_average(self):
-        """Finds the average of the values"""
+        """Find the average of the values."""
         avg = sum(self.values) / len(self.values)
         self.output['average'] = avg
 
     def get_percentile(self, percentile):
-        """Finds the nth percentile of the values"""
+        """Find the nth percentile of the values."""
         size = len(self.values)
         self.output['percentile_' + str(percentile)] = sorted(self.values)[
             int(math.ceil((size * percentile) / 100)) - 1]
 
     def get_deviation(self):
-        """Finds the standard deviation of the values"""
+        """Find the standard deviation of the values."""
         self.output['deviation'] = statistics.stdev(self.values)
 
     def get_variance(self):
-        """Finds the variance of the values"""
+        """Find the variance of the values."""
         self.output['variance'] = statistics.variance(self.values)
 
     def process_values(self):
-        """Iterate over each operation and call the respective function and finally return the
-        output """
+        """Iterate over each operation and call the respective function and finally return the output."""
         for operation in self.operations:
             if operation == "sum":
                 self.get_sum()
