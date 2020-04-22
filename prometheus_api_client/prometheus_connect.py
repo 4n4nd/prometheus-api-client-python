@@ -352,25 +352,42 @@ class PrometheusConnect:
 
         return data
 
-
-
-
     @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES, wait_fixed=CONNECTION_RETRY_WAIT_TIME)
-    def get_metric_aggregation(self, query, aggregations):
+    def get_metric_aggregation(self, query, operations):
+        """
+        A method to get aggregations on metric values received from PromQL query.
+
+        This method takes as input a string which will be sent as a query to
+        the specified Prometheus Host. This query is a PromQL query. And, a
+        list of operations to perform such as- sum, max, min, deviation, etc.
+
+        The received query is passed to the custom_query method which returns
+        the result of the query and the values are extracted from the result.
+        Which is further passed to the Metric_aggregation object to perform
+        the operations.
+
+        :param query: (str) This is a PromQL query, a few examples can be found
+        at https://prometheus.io/docs/prometheus/latest/querying/examples/
+        :param operations: (list) A list of operations to perform on the values.
+        Operations are specified in string type.
+        Available operations - sum, max, min, variance, nth percentile, deviation
+        and average.
+
+        :returns: (dict) A dict of aggregated values received in response to the operations
+        performed on the values for the query sent.
+
+        Example output :
+            {
+                'sum': 18.05674,
+                'max': 6.009373
+             }
+        """
         data = self.custom_query(query)
-        print("data is :")
-        print(data)
         values = []
         for result in data:
             val = float(result["value"][1])
             values.append(val)
 
-        #aggegations = ["sum", "max", "percentile_50"]
-        aggregation_object = Metric_aggregation(values, aggregations)
+        aggregation_object = Metric_aggregation(values, operations)
         output = aggregation_object.process_values()
         return output
-
-
-pc = PrometheusConnect()
-ans = pc.get_metric_aggregation('go_gc_duration_seconds', ["sum", "max", "percentile_95", "deviation", "variance"])
-print(ans)

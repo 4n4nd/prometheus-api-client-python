@@ -1,18 +1,48 @@
+import logging
 import math
 import statistics
 
+_LOGGER = logging.getLogger(__name__)
 
 class Metric_aggregation:
-    def __init__(self, values, operations):
+    """A Class to perform aggregation operations on the metric values.
 
-        print("Aggregatin object created!")
-        print(values)
+        :param operations: (list) A list of operations to perform on the values.
+        Operations are specified in string type.
+        Available operations - sum, max, min, variance, nth percentile, deviation
+        and average.
+        :param values: (list) A list of values to perform operation on.
+        These are the metric values(int|float)
+
+        Example Usage:
+      .. code-block:: python
+
+          prom = PrometheusConnect()
+          operations = ["sum", "max", "percentile_95", "percentile_50"]
+          query = go_gc_duration_seconds
+          aggregation_object = Metric_aggregation(values, operations)
+          aggregated_values = aggregation_object.process_values()
+
+          This returns the dict of aggregated values.
+
+        """
+
+    def __init__(self, values, operations):
 
         if not isinstance(operations, list):
             raise TypeError("Operations can be only of type list")
 
         if not isinstance(values, list):
             raise TypeError("Values can be only of type list")
+
+        if len(values) == 0:
+            _LOGGER.debug("No values found for given query.")
+            return None
+
+        if len(operations) == 0:
+            _LOGGER.debug("No operations found to perform")
+            return None
+
         self.values = values
         self.operations = operations
         self.output = {}
