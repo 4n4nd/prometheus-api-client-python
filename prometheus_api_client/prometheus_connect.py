@@ -8,11 +8,13 @@ import logging
 from datetime import datetime, timedelta
 import requests
 from retrying import retry
+from metric_aggregation import Metric_aggregation
 
-from .exceptions import PrometheusApiClientException
+from exceptions import PrometheusApiClientException
 
 
 # set up logging
+
 _LOGGER = logging.getLogger(__name__)
 
 # In case of a connection failure try 2 more times
@@ -160,7 +162,7 @@ class PrometheusConnect:
         _LOGGER.debug("chunk_size: %s", chunk_size)
 
         if not (isinstance(start_time, datetime) and isinstance(end_time, datetime)):
-            raise TypeError("start_time and end_time can only be of type datetime.datetime")
+                raise TypeError("start_time and end_time can only be of type datetime.datetime")
 
         if not chunk_size:
             chunk_size = end_time - start_time
@@ -349,3 +351,26 @@ class PrometheusConnect:
             )
 
         return data
+
+
+
+
+    @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES, wait_fixed=CONNECTION_RETRY_WAIT_TIME)
+    def get_metric_aggregation(self, query, aggregations):
+        data = self.custom_query(query)
+        print("data is :")
+        print(data)
+        values = []
+        for result in data:
+            val = float(result["value"][1])
+            values.append(val)
+
+        #aggegations = ["sum", "max", "percentile_50"]
+        aggregation_object = Metric_aggregation(values, aggregations)
+        output = aggregation_object.process_values()
+        return output
+
+
+pc = PrometheusConnect()
+ans = pc.get_metric_aggregation('go_gc_duration_seconds', ["sum", "max", "percentile_95", "deviation", "variance"])
+print(ans)
