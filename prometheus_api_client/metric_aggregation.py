@@ -4,6 +4,7 @@ import statistics
 
 _LOGGER = logging.getLogger(__name__)
 
+
 class Metric_aggregation:
     """A Class to perform aggregation operations on the metric values.
 
