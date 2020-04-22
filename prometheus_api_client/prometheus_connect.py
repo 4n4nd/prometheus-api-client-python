@@ -8,9 +8,9 @@ import logging
 from datetime import datetime, timedelta
 import requests
 from retrying import retry
-from metric_aggregation import MetricAggregation
+from .metric_aggregation import MetricAggregation
 
-from exceptions import PrometheusApiClientException
+from .exceptions import PrometheusApiClientException
 
 
 # set up logging
