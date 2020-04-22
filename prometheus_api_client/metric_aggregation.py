@@ -1,3 +1,4 @@
+"""A Class for performing aggregation operations on a query values."""
 import logging
 import math
 import statistics
@@ -5,20 +6,21 @@ import statistics
 _LOGGER = logging.getLogger(__name__)
 
 
-class Metric_aggregation:
-    """A Class to perform aggregation operations on the metric values.
+class MetricAggregation:
+    """
+    A Class to perform aggregation operations on the metric values.
 
-        :param operations: (list) A list of operations to perform on the values.
-        Operations are specified in string type.
-        Available operations - sum, max, min, variance, nth percentile, deviation
-        and average.
-        :param values: (list) A list of values to perform operation on.
-        These are the metric values(int|float)
+    :param operations: (list) A list of operations to perform on the values.
+    Operations are specified in string type.
+    Available operations - sum, max, min, variance, nth percentile, deviation
+    and average.
+    :param values: (list) A list of values to perform operation on.
+    These are the metric values(int|float)
 
-        """
+    """
 
     def __init__(self, values, operations):
-
+        """Class MetricAggregation constructor."""
         if not isinstance(operations, list):
             raise TypeError("Operations can be only of type list")
 
@@ -38,30 +40,39 @@ class Metric_aggregation:
         self.output = {}
 
     def get_max(self):
+        """Finds the maximum value"""
         self.output['max'] = max(self.values)
 
-    def get_min(self, values):
+    def get_min(self):
+        """Finds the minimum value"""
         self.output['min'] = min(self.values)
 
     def get_sum(self):
+        """Finds the sum of the values"""
         self.output['sum'] = sum(self.values)
 
     def get_average(self):
+        """Finds the average of the values"""
         avg = sum(self.values) / len(self.values)
         self.output['average'] = avg
 
     def get_percentile(self, percentile):
+        """Finds the nth percentile of the values"""
         size = len(self.values)
         self.output['percentile_' + str(percentile)] = sorted(self.values)[
             int(math.ceil((size * percentile) / 100)) - 1]
 
     def get_deviation(self):
+        """Finds the standard deviation of the values"""
         self.output['deviation'] = statistics.stdev(self.values)
 
     def get_variance(self):
+        """Finds the variance of the values"""
         self.output['variance'] = statistics.variance(self.values)
 
     def process_values(self):
+        """Iterate over each operation and call the respective function and finally return the
+        output """
         for operation in self.operations:
             if operation == "sum":
                 self.get_sum()

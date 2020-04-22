@@ -8,7 +8,7 @@ import logging
 from datetime import datetime, timedelta
 import requests
 from retrying import retry
-from metric_aggregation import Metric_aggregation
+from metric_aggregation import MetricAggregation
 
 from exceptions import PrometheusApiClientException
 
@@ -162,7 +162,7 @@ class PrometheusConnect:
         _LOGGER.debug("chunk_size: %s", chunk_size)
 
         if not (isinstance(start_time, datetime) and isinstance(end_time, datetime)):
-                raise TypeError("start_time and end_time can only be of type datetime.datetime")
+            raise TypeError("start_time and end_time can only be of type datetime.datetime")
 
         if not chunk_size:
             chunk_size = end_time - start_time
@@ -388,6 +388,6 @@ class PrometheusConnect:
             val = float(result["value"][1])
             values.append(val)
 
-        aggregation_object = Metric_aggregation(values, operations)
+        aggregation_object = MetricAggregation(values, operations)
         output = aggregation_object.process_values()
         return output
