@@ -5,13 +5,12 @@ import os
 import sys
 import json
 import logging
+import numpy
 from datetime import datetime, timedelta
 import requests
 from retrying import retry
-from .metric_aggregation import MetricAggregation
 
 from .exceptions import PrometheusApiClientException
-
 
 # set up logging
 
@@ -35,7 +34,8 @@ class PrometheusConnect:
     """
 
     def __init__(
-        self, url: str = "http://127.0.0.1:9090", headers: dict = None, disable_ssl: bool = False
+            self, url: str = "http://127.0.0.1:9090", headers: dict = None,
+            disable_ssl: bool = False
     ):
         """Constructor for the class PrometheusConnect."""
         self.headers = headers
@@ -75,7 +75,7 @@ class PrometheusConnect:
 
     @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES, wait_fixed=CONNECTION_RETRY_WAIT_TIME)
     def get_current_metric_value(
-        self, metric_name: str, label_config: dict = None, params: dict = None
+            self, metric_name: str, label_config: dict = None, params: dict = None
     ):
         r"""
         A method to get the current metric value for the specified metric and label configuration.
@@ -123,14 +123,14 @@ class PrometheusConnect:
 
     @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES, wait_fixed=CONNECTION_RETRY_WAIT_TIME)
     def get_metric_range_data(
-        self,
-        metric_name: str,
-        label_config: dict = None,
-        start_time: datetime = (datetime.now() - timedelta(minutes=10)),
-        end_time: datetime = datetime.now(),
-        chunk_size: timedelta = None,
-        store_locally: bool = False,
-        params: dict = None,
+            self,
+            metric_name: str,
+            label_config: dict = None,
+            start_time: datetime = (datetime.now() - timedelta(minutes=10)),
+            end_time: datetime = datetime.now(),
+            chunk_size: timedelta = None,
+            store_locally: bool = False,
+            params: dict = None,
     ):
         r"""
         A method to get the current metric value for the specified metric and label configuration.
@@ -259,15 +259,15 @@ class PrometheusConnect:
         directory_name = end_timestamp.strftime("%Y%m%d")
         timestamp = end_timestamp.strftime("%Y%m%d%H%M")
         object_path = (
-            "./metrics/"
-            + self.prometheus_host
-            + "/"
-            + metric_name
-            + "/"
-            + directory_name
-            + "/"
-            + timestamp
-            + ".json"
+                "./metrics/"
+                + self.prometheus_host
+                + "/"
+                + metric_name
+                + "/"
+                + directory_name
+                + "/"
+                + timestamp
+                + ".json"
         )
         return object_path
 
@@ -308,7 +308,8 @@ class PrometheusConnect:
         return data
 
     @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES, wait_fixed=CONNECTION_RETRY_WAIT_TIME)
-    def custom_query_range(self, query: str, start_time: datetime, end_time: datetime, step: str, params: dict = None):
+    def custom_query_range(self, query: str, start_time: datetime, end_time: datetime, step: str,
+                           params: dict = None):
         """
         A method to send a query_range to a Prometheus Host.
 
@@ -363,8 +364,6 @@ class PrometheusConnect:
 
         The received query is passed to the custom_query method which returns
         the result of the query and the values are extracted from the result.
-        Which is further passed to the Metric_aggregation object to perform
-        the operations.
 
         :param query: (str) This is a PromQL query, a few examples can be found
         at https://prometheus.io/docs/prometheus/latest/querying/examples/
@@ -382,12 +381,39 @@ class PrometheusConnect:
                 'max': 6.009373
              }
         """
+        if not isinstance(operations, list):
+            raise TypeError("Operations can be only of type list")
+        if len(operations) == 0:
+            _LOGGER.debug("No operations found to perform")
+            return None
+        aggregated_values = {}
         data = self.custom_query(query)
         values = []
+
         for result in data:
             val = float(result["value"][1])
             values.append(val)
+        if len(values) == 0:
+            _LOGGER.debug("No values found for given query.")
+            return None
 
-        aggregation_object = MetricAggregation(values, operations)
-        output = aggregation_object.process_values()
-        return output
+        np_array = numpy.array(values)
+        for operation in operations:
+            if operation == "sum":
+                aggregated_values['sum'] = numpy.sum(np_array)
+            elif operation == "max":
+                aggregated_values['max'] = numpy.max(np_array)
+            elif operation == "min":
+                aggregated_values['min'] = numpy.min(np_array)
+            elif operation == "average":
+                aggregated_values['average'] = numpy.average(np_array)
+            elif operation.startswith("percentile"):
+                percentile = float(operation.split('_')[1])
+                aggregated_values['percentile_' + str(percentile)] = numpy.percentile(values, percentile)
+            elif operation == "deviation":
+                aggregated_values['deviation'] = numpy.std(np_array)
+            elif operation == "variance":
+                aggregated_values['deviation'] = numpy.var(np_array)
+            else:
+                raise TypeError("Invalid operation: " + operation)
+        return aggregated_values

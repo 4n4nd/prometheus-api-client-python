@@ -7,4 +7,3 @@ from .prometheus_connect import *
 from .metric import Metric
 from .metrics_list import MetricsList
 from .metric_snapshot_df import MetricSnapshotDataFrame
-from .metric_aggregation import MetricAggregation
