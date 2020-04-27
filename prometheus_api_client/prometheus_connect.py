@@ -354,7 +354,7 @@ class PrometheusConnect:
         return data
 
     @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES, wait_fixed=CONNECTION_RETRY_WAIT_TIME)
-    def get_metric_aggregation(self, query, operations):
+    def get_metric_aggregation(self, query: str, operations: list, params: dict = None):
         """
         A method to get aggregations on metric values received from PromQL query.
 
@@ -369,6 +369,8 @@ class PrometheusConnect:
         at https://prometheus.io/docs/prometheus/latest/querying/examples/
         :param operations: (list) A list of operations to perform on the values.
         Operations are specified in string type.
+        :param params: (dict) Optional dictionary containing GET parameters to be
+        sent along with the API request, such as "timeout"
         Available operations - sum, max, min, variance, nth percentile, deviation
         and average.
 
@@ -387,7 +389,7 @@ class PrometheusConnect:
             _LOGGER.debug("No operations found to perform")
             return None
         aggregated_values = {}
-        data = self.custom_query(query)
+        data = self.custom_query(query, params)
         values = []
 
         for result in data:
