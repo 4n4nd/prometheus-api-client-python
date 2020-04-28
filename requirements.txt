@@ -2,3 +2,4 @@ retrying
 requests
 dateparser
 pandas
+numpy
