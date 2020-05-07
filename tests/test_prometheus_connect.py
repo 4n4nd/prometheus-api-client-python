@@ -103,7 +103,12 @@ class TestPrometheusConnect(unittest.TestCase):
 
     def test_get_metric_aggregation(self):  # noqa D102
         operations = ["sum", "max", "min", "variance", "percentile_50", "deviation", "average"]
-        aggregated_values = self.pc.get_metric_aggregation(query="up", operations=operations)
+        start_time = datetime.now() - timedelta(minutes=10)
+        end_time = datetime.now()
+        step = "15"
+        aggregated_values = self.pc.get_metric_aggregation(
+            query="up", operations=operations, start_time=start_time, end_time=end_time, step=step
+        )
 
         self.assertTrue(len(aggregated_values) > 0, "no values received after aggregating")
 
@@ -169,7 +174,11 @@ class TestPrometheusConnectWithMockedNetwork(BaseMockedNetworkTestcase):
         self.assertEqual("HTTP Status Code 403 (b'BOOM!')", str(exc.exception))
 
         with self.assertRaises(PrometheusApiClientException) as exc:
-            self.pc.get_metric_aggregation("query", ["sum", "deviation"])
+            start_time = datetime.now() - timedelta(minutes=10)
+            end_time = datetime.now()
+            self.pc.get_metric_aggregation(
+                "query", ["sum", "deviation"], start_time, end_time, "15"
+            )
         self.assertEqual("HTTP Status Code 403 (b'BOOM!')", str(exc.exception))
 
     def test_all_metrics_method(self):  # noqa D102
