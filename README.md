@@ -16,4 +16,4 @@ To install directly from this branch:
 
 ## Links
 
-- [Documentation](https://prometheus-api-client-python.readthedocs.io/source/prometheus_api_client.html)
+- [Documentation](https://prometheus-api-client-python.readthedocs.io/en/master/source/prometheus_api_client.html)
