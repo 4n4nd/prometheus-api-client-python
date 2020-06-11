@@ -1,3 +1,4 @@
+import os
 import setuptools
 
 with open("README.md", "r") as fh:
@@ -9,10 +10,20 @@ def get_install_requires():
         res = requirements_file.readlines()
         return [req.split(" ", maxsplit=1)[0] for req in res if req]
 
+def get_version():
+    with open(os.path.join('prometheus_api_client', '__init__.py')) as f:
+        content = f.readlines()
 
+    for line in content:
+        if line.startswith('__version__ ='):
+            # dirty, remove trailing and leading chars
+            return line.split(' = ')[1][1:-2]
+    raise ValueError("No version identifier found")
+
+VERSION = get_version()
 setuptools.setup(
     name="prometheus-api-client",
-    version="0.2.0",
+    version=VERSION,
     author="Anand Sanmukhani",
     author_email="asanmukh@redhat.com",
     description="A small python api to collect data from prometheus",
