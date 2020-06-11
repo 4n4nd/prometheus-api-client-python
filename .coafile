@@ -12,10 +12,6 @@ language = Python
 editor = vim
 ignore = setup.py, docs/*, tests/*
 
-[all.md]
-bears = MarkdownBear
-files = **.md
-
 [all.yaml]
 bears = YAMLLintBear
 files = **.yaml, **.yml
