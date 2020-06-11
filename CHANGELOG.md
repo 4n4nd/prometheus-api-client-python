@@ -56,3 +56,47 @@
 - Add function to store metrics locally Add function to print metric data Add requirements.txt
 - Fix request query for `get_current_metric_value`
 - Add basic methods to request data from prometheus
+
+## Release 0.3.0 (2020-06-11T15:21:52)
+* Template for issue creation
+* :pushpin: Automatic update of dependency pandas from 1.0.3 to 1.0.4
+* added numpy to requirements.txt
+* added params argument
+* added tests for metric_aggregation
+* removed metric_aggregation class
+* fix linter errors
+* fixed import issues
+* added doc strings
+* fixed doc string
+* code cleaning
+* code cleaning and adding adding doc strings
+* fixed data processing
+* added aggregation class
+* :pushpin: Automatic update of dependency matplotlib from 3.2.0 to 3.2.1
+* :pushpin: Automatic update of dependency pandas from 1.0.2 to 1.0.3
+* Add MetricSnapshotDataFrame module to generate docs config. Update docstring. Addresses #93
+* Add Coala Linter
+* :pushpin: Automatic update of dependency pandas from 1.0.1 to 1.0.2
+* :pushpin: Automatic update of dependency dateparser from 0.7.2 to 0.7.4
+* Fixed lint error - missing period in summary line
+* Fixed lint errors. Replaced assert for better code quality
+* Added some tests for MetricSnapshotDataFrame
+* Added initial implementation of MetricSnapshotDataFrame. Addresses #86
+* :pushpin: Automatic update of dependency matplotlib from 3.1.3 to 3.2.0
+* :pushpin: Automatic update of dependency matplotlib from 3.1.3 to 3.2.0
+* Fix Lint Errors
+* :pushpin: Automatic update of dependency requests from 2.22.0 to 2.23.0
+* Update .thoth.yaml
+* Update .thoth.yaml
+* :pushpin: Automatic update of dependency pandas from 1.0.0 to 1.0.1
+* try to make codacy happy
+* Base testcase for network mocking, test for PrometheusConnect. solves #38
+* :pushpin: Automatic update of dependency matplotlib from 3.1.2 to 3.1.3
+* :pushpin: Automatic update of dependency pandas from 0.25.3 to 1.0.0
+* add exception module to docs build
+* Upd missed Exception rising, upd docstrings
+* Replace Exception to internal exception class
+* method to access prometheus query_range HTTP API
+* :pushpin: Automatic update of dependency matplotlib from 3.1.1 to 3.1.2
+* :pushpin: Automatic update of dependency pandas from 0.25.2 to 0.25.3
+* :pushpin: Automatic update of dependency pandas from 0.25.1 to 0.25.2
