@@ -12,7 +12,7 @@ def get_install_requires():
 
 setuptools.setup(
     name="prometheus-api-client",
-    version="0.2.0",
+    version="0.3.0",
     author="Anand Sanmukhani",
     author_email="asanmukh@redhat.com",
     description="A small python api to collect data from prometheus",
