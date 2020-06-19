@@ -39,11 +39,11 @@
         },
         "dateparser": {
             "hashes": [
-                "sha256:b8ad97a909c3466d8d64a13d524914e85a15cc0b3ad915dd80c12f189a652152",
-                "sha256:cfa0db2df93903406ca867fd922ac4f482a5fb162356f31d2d7a3012fa5f0d14"
+                "sha256:7552c994f893b5cb8fcf103b4cd2ff7f57aab9bfd2619fdf0cf571c0740fd90b",
+                "sha256:e875efd8c57c85c2d02b238239878db59ff1971f5a823457fcc69e493bf6ebfa"
             ],
             "index": "pypi",
-            "version": "==0.7.5"
+            "version": "==0.7.6"
         },
         "idna": {
             "hashes": [
