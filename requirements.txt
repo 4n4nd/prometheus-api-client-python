@@ -1,5 +1,5 @@
 retrying
 requests
 dateparser
-pandas
+pandas>=1.0.0
 numpy
