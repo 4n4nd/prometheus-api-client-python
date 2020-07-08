@@ -10,8 +10,10 @@ httmock = "*"
 retrying = "*"
 requests = "*"
 dateparser = "*"
-pandas = "*"
+pandas = ">=1.0.0"
 matplotlib = "*"
+numpy = "*"
 
 [requires]
 python_version = "3.6"
+pandas_version = ">=1.0.0"
