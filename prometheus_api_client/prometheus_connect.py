@@ -8,7 +8,8 @@ import logging
 import numpy
 from datetime import datetime, timedelta
 import requests
-from retrying import retry
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 from .exceptions import PrometheusApiClientException
 
@@ -19,7 +20,9 @@ _LOGGER = logging.getLogger(__name__)
 # In case of a connection failure try 2 more times
 MAX_REQUEST_RETRIES = 3
 # wait 1 second before retrying in case of an error
-CONNECTION_RETRY_WAIT_TIME = 1000
+RETRY_BACKOFF_FACTOR = 1
+# retry only on these status
+RETRY_ON_STATUS = [408, 429, 500, 502, 503, 504]
 
 
 class PrometheusConnect:
@@ -35,16 +38,27 @@ class PrometheusConnect:
 
     def __init__(
             self, url: str = "http://127.0.0.1:9090", headers: dict = None,
-            disable_ssl: bool = False
+            disable_ssl: bool = False, retry: Retry = None
     ):
         """Constructor for the class PrometheusConnect."""
+        if url is None:
+            raise TypeError("missing url")
+
         self.headers = headers
         self.url = url
         self.prometheus_host = urlparse(self.url).netloc
         self._all_metrics = None
         self.ssl_verification = not disable_ssl
 
-    @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES, wait_fixed=CONNECTION_RETRY_WAIT_TIME)
+        if retry is None:
+            retry = Retry(
+                total=MAX_REQUEST_RETRIES,
+                backoff_factor=RETRY_BACKOFF_FACTOR,
+                status_forcelist=RETRY_ON_STATUS)
+
+        self._session = requests.Session()
+        self._session.mount(self.url, HTTPAdapter(max_retries=retry))
+
     def all_metrics(self, params: dict = None):
         """
         Get the list of all the metrics that the prometheus host scrapes.
@@ -58,7 +72,7 @@ class PrometheusConnect:
             (PrometheusApiClientException) Raises in case of non 200 response status code
         """
         params = params or {}
-        response = requests.get(
+        response = self._session.get(
             "{0}/api/v1/label/__name__/values".format(self.url),
             verify=self.ssl_verification,
             headers=self.headers,
@@ -73,7 +87,6 @@ class PrometheusConnect:
             )
         return self._all_metrics
 
-    @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES, wait_fixed=CONNECTION_RETRY_WAIT_TIME)
     def get_current_metric_value(
             self, metric_name: str, label_config: dict = None, params: dict = None
     ):
@@ -106,7 +119,7 @@ class PrometheusConnect:
             query = metric_name
 
         # using the query API to get raw data
-        response = requests.get(
+        response = self._session.get(
             "{0}/api/v1/query".format(self.url),
             params={**{"query": query}, **params},
             verify=self.ssl_verification,
@@ -121,7 +134,6 @@ class PrometheusConnect:
             )
         return data
 
-    @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES, wait_fixed=CONNECTION_RETRY_WAIT_TIME)
     def get_metric_range_data(
             self,
             metric_name: str,
@@ -188,7 +200,7 @@ class PrometheusConnect:
                 chunk_seconds = end - start
 
             # using the query API to get raw data
-            response = requests.get(
+            response = self._session.get(
                 "{0}/api/v1/query".format(self.url),
                 params={
                     **{
@@ -271,7 +283,6 @@ class PrometheusConnect:
         )
         return object_path
 
-    @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES, wait_fixed=CONNECTION_RETRY_WAIT_TIME)
     def custom_query(self, query: str, params: dict = None):
         """
         A method to send a custom query to a Prometheus Host.
@@ -292,7 +303,7 @@ class PrometheusConnect:
         data = None
         query = str(query)
         # using the query API to get raw data
-        response = requests.get(
+        response = self._session.get(
             "{0}/api/v1/query".format(self.url),
             params={**{"query": query}, **params},
             verify=self.ssl_verification,
@@ -307,7 +318,6 @@ class PrometheusConnect:
 
         return data
 
-    @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES, wait_fixed=CONNECTION_RETRY_WAIT_TIME)
     def custom_query_range(self, query: str, start_time: datetime, end_time: datetime, step: str,
                            params: dict = None):
         """
@@ -334,7 +344,7 @@ class PrometheusConnect:
         data = None
         query = str(query)
         # using the query_range API to get raw data
-        response = requests.get(
+        response = self._session.get(
             "{0}/api/v1/query_range".format(self.url),
             params={**{"query": query,
                        "start": start,
@@ -353,7 +363,6 @@ class PrometheusConnect:
 
         return data
 
-    @retry(stop_max_attempt_number=MAX_REQUEST_RETRIES, wait_fixed=CONNECTION_RETRY_WAIT_TIME)
     def get_metric_aggregation(self, query: str, operations: list, params: dict = None):
         """
         A method to get aggregations on metric values received from PromQL query.

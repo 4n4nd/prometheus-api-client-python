@@ -7,7 +7,6 @@ verify_ssl = true
 httmock = "*"
 
 [packages]
-retrying = "*"
 requests = "*"
 dateparser = "*"
 pandas = ">=1.0.0"
