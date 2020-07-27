@@ -34,6 +34,7 @@ class PrometheusConnect:
         the host. Example: {"Authorization": "bearer my_oauth_token_to_the_host"}
     :param disable_ssl: (bool) If set to True, will disable ssl certificate verification
         for the http requests made to the prometheus host
+    :param retry: (Retry) Retry adapter to retry on HTTP errors
     """
 
     def __init__(
