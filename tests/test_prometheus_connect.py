@@ -6,6 +6,7 @@ import os
 from datetime import datetime, timedelta
 
 import requests
+from requests.packages.urllib3.util.retry import Retry
 
 from prometheus_api_client import MetricsList, PrometheusConnect, PrometheusApiClientException
 
@@ -119,6 +120,13 @@ class TestPrometheusConnect(unittest.TestCase):
             _ = self.pc.get_metric_aggregation(
                 query="up", operations="sum"
             )
+
+    def test_retry_on_error(self):
+        retry = Retry(total=3, backoff_factor=0.1, status_forcelist=[400])
+        pc = PrometheusConnect(url=self.prometheus_host, disable_ssl=True, retry=retry)
+
+        with self.assertRaises(requests.exceptions.RetryError, msg="too many 400 error responses"):
+            pc.custom_query("BOOM.BOOM!#$%")
 
 
 class TestPrometheusConnectWithMockedNetwork(BaseMockedNetworkTestcase):
