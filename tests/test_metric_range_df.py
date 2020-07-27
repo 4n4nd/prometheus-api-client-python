@@ -3,6 +3,7 @@ import json
 import os
 from prometheus_api_client import MetricRangeDataFrame
 
+
 class TestMetricRangeDataFrame(unittest.TestCase):
     def setUp(self):
         """
@@ -24,7 +25,6 @@ class TestMetricRangeDataFrame(unittest.TestCase):
                     labels.update(set(i["metric"].keys()))
                 self.raw_metrics_labels.append(labels)
 
-
     def test_setup(self):
         """
         Check if setup was done correctly
@@ -32,7 +32,6 @@ class TestMetricRangeDataFrame(unittest.TestCase):
         self.assertEqual(
             8, len(self.raw_metrics_list), "incorrect number json files read (incorrect test setup)"
         )
-
 
     def test_init_shape(self):
         """
@@ -62,7 +61,6 @@ class TestMetricRangeDataFrame(unittest.TestCase):
                 set([v[0] for s in curr_metric_list for v in s["values"] ])
             )
 
-
     def test_init_columns(self):
         """
         Test if dataframe initialized has correct columns
@@ -73,7 +71,6 @@ class TestMetricRangeDataFrame(unittest.TestCase):
                 set(MetricRangeDataFrame(curr_metric_list).columns),
                 "incorrect dataframe columns",
             )
-
 
     def test_init_single_metric(self):
         """
