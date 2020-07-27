@@ -3,14 +3,17 @@ from pandas import DataFrame
 from pandas._typing import Axes, Dtype
 from typing import Optional, Sequence
 
+
 class MetricRangeDataFrame(DataFrame):
 
     """Subclass to format and represent Prometheus query response as pandas.DataFrame.
 
     Assumes response is either a json or sequence of jsons.
 
-    This class should be used specifically to instantiate a query response where the query response has several timestamp values per series.
-    That is, a range vector is expected. If the data is an instant vector, use MetricSnapshotDataFrame instead.
+    This class should be used specifically to instantiate a query response,
+    where the query response has several timestamp values per series.
+    That is, a range vector is expected. 
+    If the data is an instant vector, use MetricSnapshotDataFrame instead.
 
     Some argument descriptions in this docstring were copied from pandas.core.frame.DataFrame.
 
@@ -62,8 +65,8 @@ class MetricRangeDataFrame(DataFrame):
         for v in data:
             if "value" in v:
                 raise TypeError(
-                "data must be a range vector. Expected range vector, got instant vector"
-            )
+                    "data must be a range vector. Expected range vector, got instant vector"
+                )
             for t in v["values"]:
                 row_data.append({**v["metric"], "timestamp": t[0], "value": t[1]})
 
