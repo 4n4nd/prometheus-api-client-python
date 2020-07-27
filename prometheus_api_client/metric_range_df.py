@@ -1,8 +1,10 @@
+"""A pandas.DataFrame subclass for Prometheus range vector responses."""
 from pandas import DataFrame
 from pandas._typing import Axes, Dtype
 from typing import Optional, Sequence
 
 class MetricRangeDataFrame(DataFrame):
+
     """Subclass to format and represent Prometheus query response as pandas.DataFrame.
 
     Assumes response is either a json or sequence of jsons.
@@ -48,8 +50,8 @@ class MetricRangeDataFrame(DataFrame):
         columns: Optional[Axes] = None,
         dtype: Optional[Dtype] = None,
         copy: bool = False,
-        ):
-        """Constructor for MetricSnapshotDataFrame class."""
+    ):
+        """Constructor for MetricRangeDataFrame class."""
         if data is not None:
             # if just a single json instead of list/set/other sequence of jsons,
             # treat as list with single entry
@@ -69,5 +71,5 @@ class MetricRangeDataFrame(DataFrame):
         super(MetricRangeDataFrame, self).__init__(
             data=row_data, index=index, columns=columns, dtype=dtype, copy=copy
         )
-        
+
         super(MetricRangeDataFrame, self).set_index(["timestamp"], inplace=True)
