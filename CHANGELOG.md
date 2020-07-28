@@ -203,3 +203,17 @@
 * Add function to store metrics locally Add function to print metric data Add requirements.txt
 * Fix request query for `get_current_metric_value`
 * Add basic methods to request data from prometheus
+
+## Release 0.4.0 (2020-07-28T11:21:26)
+* Document retry
+* :pushpin: Automatic update of dependency numpy from 1.19.0 to 1.19.1
+* :pushpin: Automatic update of dependency matplotlib from 3.2.2 to 3.3.0
+* Retry the proper way
+* Updated the pipfile and the requirement.txt file
+* :pushpin: Automatic update of dependency matplotlib from 3.2.1 to 3.2.2
+* :pushpin: Automatic update of dependency pandas from 1.0.4 to 1.0.5
+* :pushpin: Automatic update of dependency requests from 2.23.0 to 2.24.0
+* :pushpin: Automatic update of dependency dateparser from 0.7.5 to 0.7.6
+* Update README.md
+* Update README.md
+* Update README.md
