@@ -43,7 +43,6 @@ class MetricRangeDataFrame(DataFrame):
           | 1577836801 |   __up__   | cluster_id_1    | label_2_value_3    | 1     |
           +-------------------------+-----------------+------------=-------+-------+
           '''
-
     """
 
     def __init__(
@@ -75,4 +74,4 @@ class MetricRangeDataFrame(DataFrame):
             data=row_data, index=index, columns=columns, dtype=dtype, copy=copy
         )
 
-        super(MetricRangeDataFrame, self).set_index(["timestamp"], inplace=True)
+        self.set_index(["timestamp"], inplace=True)

@@ -38,14 +38,14 @@ class TestMetricRangeDataFrame(unittest.TestCase):
         Test if dataframe initialized is of correct shape
         """
         # check shape
-        # each metric json contains number of timestamps equal to number entries * number of timestamps in each series 
+        # each metric json contains number of timestamps equal to number entries * number of timestamps in each series
         # we're assuming each series has the same number of timestamps
         # 3 labels
         for current_metric_list in self.raw_metrics_list:
             df = MetricRangeDataFrame(current_metric_list)
             num_values = sum([len(v["values"]) for v in current_metric_list])
             self.assertEqual(
-                (len(df.index.values), 5),    # shape[1] = 4xlabels + value
+                (len(df.index.values), df.shape[1]),    # shape[1] = 4xlabels + value
                 (num_values, 5),
                 "incorrect dataframe shape",
             )
