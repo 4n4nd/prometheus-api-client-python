@@ -45,7 +45,7 @@ class MetricRangeDataFrame(DataFrame):
           '''
 
     """
-    
+
     def __init__(
         self,
         data=None,
