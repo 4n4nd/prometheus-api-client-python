@@ -15,9 +15,9 @@ class TestMetric(unittest.TestCase):
         """
         self.raw_metrics_list = list()
         for (dir_path, _, file_names) in os.walk("./tests/metrics"):
-            self.raw_metrics_list.extend(
-                [json.load(open(os.path.join(dir_path, file))) for file in file_names]
-            )
+            for file in file_names:
+                with open(os.path.join(dir_path, file)) as json_fd:
+                    self.raw_metrics_list.append(json.load(json_fd))
 
     def test_setup(self):
         """
