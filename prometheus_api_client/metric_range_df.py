@@ -75,4 +75,3 @@ class MetricRangeDataFrame(DataFrame):
         )
 
         self.set_index(["timestamp"], inplace=True)
-
