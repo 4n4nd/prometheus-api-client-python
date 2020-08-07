@@ -8,6 +8,7 @@ class TestWithMetrics:
             read metrics stored as jsons in './tests/metrics'
             """
             self.raw_metrics_list = list()
+            self.raw_metrics_labels = list()
             files = list()
 
             for (dir_path, _, file_names) in os.walk("./tests/metrics"):
@@ -17,7 +18,14 @@ class TestWithMetrics:
             # Several tests depend on order of these files.
             for file_path in sorted(files):
                 with open(file_path) as json_fd:
-                    self.raw_metrics_list.append(json.load(json_fd))
+                    metric_jsons = json.load(json_fd)
+                    self.raw_metrics_list.append(metric_jsons)
+
+                    # save label configs
+                    labels = set()
+                    for i in metric_jsons:
+                        labels.update(set(i["metric"].keys()))
+                    self.raw_metrics_labels.append(labels)
 
         def test_setup(self):
             """
