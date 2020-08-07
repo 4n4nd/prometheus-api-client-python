@@ -8,10 +8,16 @@ class TestWithMetrics:
             read metrics stored as jsons in './tests/metrics'
             """
             self.raw_metrics_list = list()
+            files = list()
+
             for (dir_path, _, file_names) in os.walk("./tests/metrics"):
-                for file in file_names:
-                    with open(os.path.join(dir_path, file)) as json_fd:
-                        self.raw_metrics_list.append(json.load(json_fd))
+                files.extend([(os.path.join(dir_path, f_name)) for f_name in file_names])
+
+            # Files with metrics need to be loaded in order by timestamp in their names.
+            # Several tests depend on order of these files.
+            for file_path in sorted(files):
+                with open(file_path) as json_fd:
+                    self.raw_metrics_list.append(json.load(json_fd))
 
         def test_setup(self):
             """
