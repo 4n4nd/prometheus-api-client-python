@@ -1,4 +1,4 @@
-"""docstring for MetricsList."""
+"""A list of Metric objects."""
 
 from .metric import Metric
 
@@ -24,25 +24,25 @@ class MetricsList(list):
 
     def __init__(self, metric_data_list):
         """Class MetricsList constructor."""
-        # if the input is not a list
+
         if not isinstance(metric_data_list, list):
-            # make it into a list
             metric_data_list = [metric_data_list]
 
         metric_object_list = []
+
+        def add_metric_to_object_list(metric):
+            metric_object = Metric(metric)
+            if metric_object in metric_object_list:
+                metric_object_list[metric_object_list.index(metric_object)] += metric_object
+            else:
+                metric_object_list.append(metric_object)
+
         for i in metric_data_list:
             # If it is a list of lists (for example: while reading from multiple json files)
             if isinstance(i, list):
                 for metric in i:
-                    metric_object = Metric(metric)
-                    if metric_object in metric_object_list:
-                        metric_object_list[metric_object_list.index(metric_object)] += metric_object
-                    else:
-                        metric_object_list.append(metric_object)
+                    add_metric_to_object_list(metric)
             else:
-                metric_object = Metric(i)
-                if metric_object in metric_object_list:
-                    metric_object_list[metric_object_list.index(metric_object)] += metric_object
-                else:
-                    metric_object_list.append(metric_object)
+                add_metric_to_object_list(i)
+
         super(MetricsList, self).__init__(metric_object_list)
