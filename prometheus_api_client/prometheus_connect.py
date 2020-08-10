@@ -38,10 +38,13 @@ class PrometheusConnect:
     """
 
     def __init__(
-            self, url: str = "http://127.0.0.1:9090", headers: dict = None,
-            disable_ssl: bool = False, retry: Retry = None
+        self,
+        url: str = "http://127.0.0.1:9090",
+        headers: dict = None,
+        disable_ssl: bool = False,
+        retry: Retry = None,
     ):
-        """Constructor for the class PrometheusConnect."""
+        """Functions as a Constructor for the class PrometheusConnect."""
         if url is None:
             raise TypeError("missing url")
 
@@ -55,7 +58,8 @@ class PrometheusConnect:
             retry = Retry(
                 total=MAX_REQUEST_RETRIES,
                 backoff_factor=RETRY_BACKOFF_FACTOR,
-                status_forcelist=RETRY_ON_STATUS)
+                status_forcelist=RETRY_ON_STATUS,
+            )
 
         self._session = requests.Session()
         self._session.mount(self.url, HTTPAdapter(max_retries=retry))
@@ -84,15 +88,15 @@ class PrometheusConnect:
             self._all_metrics = response.json()["data"]
         else:
             raise PrometheusApiClientException(
-                "HTTP Status Code {} ({})".format(response.status_code, response.content)
+                "HTTP Status Code {} ({!r})".format(response.status_code, response.content)
             )
         return self._all_metrics
 
     def get_current_metric_value(
-            self, metric_name: str, label_config: dict = None, params: dict = None
+        self, metric_name: str, label_config: dict = None, params: dict = None
     ):
         r"""
-        A method to get the current metric value for the specified metric and label configuration.
+        Get the current metric value for the specified metric and label configuration.
 
         :param metric_name: (str) The name of the metric
         :param label_config: (dict) A dictionary that specifies metric labels and their
@@ -131,22 +135,22 @@ class PrometheusConnect:
             data += response.json()["data"]["result"]
         else:
             raise PrometheusApiClientException(
-                "HTTP Status Code {} ({})".format(response.status_code, response.content)
+                "HTTP Status Code {} ({!r})".format(response.status_code, response.content)
             )
         return data
 
     def get_metric_range_data(
-            self,
-            metric_name: str,
-            label_config: dict = None,
-            start_time: datetime = (datetime.now() - timedelta(minutes=10)),
-            end_time: datetime = datetime.now(),
-            chunk_size: timedelta = None,
-            store_locally: bool = False,
-            params: dict = None,
+        self,
+        metric_name: str,
+        label_config: dict = None,
+        start_time: datetime = (datetime.now() - timedelta(minutes=10)),
+        end_time: datetime = datetime.now(),
+        chunk_size: timedelta = None,
+        store_locally: bool = False,
+        params: dict = None,
     ):
         r"""
-        A method to get the current metric value for the specified metric and label configuration.
+        Get the current metric value for the specified metric and label configuration.
 
         :param metric_name: (str) The name of the metric.
         :param label_config: (dict) A dictionary specifying metric labels and their
@@ -217,7 +221,7 @@ class PrometheusConnect:
                 data += response.json()["data"]["result"]
             else:
                 raise PrometheusApiClientException(
-                    "HTTP Status Code {} ({})".format(response.status_code, response.content)
+                    "HTTP Status Code {} ({!r})".format(response.status_code, response.content)
                 )
             if store_locally:
                 # store it locally
@@ -268,25 +272,25 @@ class PrometheusConnect:
             datetime.datetime.fromtimestamp()
         :returns: (str) the generated path
         """
-        end_timestamp = datetime.fromtimestamp(end_timestamp)
-        directory_name = end_timestamp.strftime("%Y%m%d")
-        timestamp = end_timestamp.strftime("%Y%m%d%H%M")
+        end_time_stamp = datetime.fromtimestamp(end_timestamp)
+        directory_name = end_time_stamp.strftime("%Y%m%d")
+        timestamp = end_time_stamp.strftime("%Y%m%d%H%M")
         object_path = (
-                "./metrics/"
-                + self.prometheus_host
-                + "/"
-                + metric_name
-                + "/"
-                + directory_name
-                + "/"
-                + timestamp
-                + ".json"
+            "./metrics/"
+            + self.prometheus_host
+            + "/"
+            + metric_name
+            + "/"
+            + directory_name
+            + "/"
+            + timestamp
+            + ".json"
         )
         return object_path
 
     def custom_query(self, query: str, params: dict = None):
         """
-        A method to send a custom query to a Prometheus Host.
+        Send a custom query to a Prometheus Host.
 
         This method takes as input a string which will be sent as a query to
         the specified Prometheus Host. This query is a PromQL query.
@@ -314,15 +318,16 @@ class PrometheusConnect:
             data = response.json()["data"]["result"]
         else:
             raise PrometheusApiClientException(
-                "HTTP Status Code {} ({})".format(response.status_code, response.content)
+                "HTTP Status Code {} ({!r})".format(response.status_code, response.content)
             )
 
         return data
 
-    def custom_query_range(self, query: str, start_time: datetime, end_time: datetime, step: str,
-                           params: dict = None):
+    def custom_query_range(
+        self, query: str, start_time: datetime, end_time: datetime, step: str, params: dict = None
+    ):
         """
-        A method to send a query_range to a Prometheus Host.
+        Send a query_range to a Prometheus Host.
 
         This method takes as input a string which will be sent as a query to
         the specified Prometheus Host. This query is a PromQL query.
@@ -347,11 +352,7 @@ class PrometheusConnect:
         # using the query_range API to get raw data
         response = self._session.get(
             "{0}/api/v1/query_range".format(self.url),
-            params={**{"query": query,
-                       "start": start,
-                       "end": end,
-                       "step": step},
-                    **params},
+            params={**{"query": query, "start": start, "end": end, "step": step}, **params},
             verify=self.ssl_verification,
             headers=self.headers,
         )
@@ -359,14 +360,14 @@ class PrometheusConnect:
             data = response.json()["data"]["result"]
         else:
             raise PrometheusApiClientException(
-                "HTTP Status Code {} ({})".format(response.status_code, response.content)
+                "HTTP Status Code {} ({!r})".format(response.status_code, response.content)
             )
 
         return data
 
     def get_metric_aggregation(self, query: str, operations: list, params: dict = None):
         """
-        A method to get aggregations on metric values received from PromQL query.
+        Get aggregations on metric values received from PromQL query.
 
         This method takes as input a string which will be sent as a query to
         the specified Prometheus Host. This query is a PromQL query. And, a
@@ -412,20 +413,22 @@ class PrometheusConnect:
         np_array = numpy.array(values)
         for operation in operations:
             if operation == "sum":
-                aggregated_values['sum'] = numpy.sum(np_array)
+                aggregated_values["sum"] = numpy.sum(np_array)
             elif operation == "max":
-                aggregated_values['max'] = numpy.max(np_array)
+                aggregated_values["max"] = numpy.max(np_array)
             elif operation == "min":
-                aggregated_values['min'] = numpy.min(np_array)
+                aggregated_values["min"] = numpy.min(np_array)
             elif operation == "average":
-                aggregated_values['average'] = numpy.average(np_array)
+                aggregated_values["average"] = numpy.average(np_array)
             elif operation.startswith("percentile"):
-                percentile = float(operation.split('_')[1])
-                aggregated_values['percentile_' + str(percentile)] = numpy.percentile(values, percentile)
+                percentile = float(operation.split("_")[1])
+                aggregated_values["percentile_" + str(percentile)] = numpy.percentile(
+                    values, percentile
+                )
             elif operation == "deviation":
-                aggregated_values['deviation'] = numpy.std(np_array)
+                aggregated_values["deviation"] = numpy.std(np_array)
             elif operation == "variance":
-                aggregated_values['deviation'] = numpy.var(np_array)
+                aggregated_values["deviation"] = numpy.var(np_array)
             else:
                 raise TypeError("Invalid operation: " + operation)
         return aggregated_values
