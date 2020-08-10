@@ -1,29 +1,11 @@
 import unittest
-import json
-import os
 from prometheus_api_client import MetricRangeDataFrame
+from .test_with_metrics import TestWithMetrics
 
 
-class TestMetricRangeDataFrame(unittest.TestCase):
+class TestMetricRangeDataFrame(unittest.TestCase, TestWithMetrics.Common):
     def setUp(self):
-        """
-        read metrics stored as jsons in './tests/metrics'
-        """
-        self.raw_metrics_list = list()
-        self.raw_metrics_labels = list()
-        for (dir_path, _, file_names) in os.walk("./tests/metrics"):
-            for fname in file_names:
-                with open(os.path.join(dir_path, fname), "rb") as f:
-                    metric_jsons = json.load(f)
-
-                # save json list
-                self.raw_metrics_list.extend([metric_jsons])
-
-                # save label configs
-                labels = set()
-                for i in metric_jsons:
-                    labels.update(set(i["metric"].keys()))
-                self.raw_metrics_labels.append(labels)
+        self.loadMetrics()
 
     def test_setup(self):
         """

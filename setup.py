@@ -32,6 +32,9 @@ setuptools.setup(
     url="https://github.com/AICoE/prometheus-api-client-python",
     install_requires=get_install_requires(),
     packages=setuptools.find_packages(),
+    tests_require=[
+        'httmock'
+    ],
     classifiers=[
         "Programming Language :: Python :: 3.6",
         "License :: OSI Approved :: MIT License",

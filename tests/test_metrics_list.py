@@ -1,28 +1,14 @@
 import unittest
-import json
-import os
 import datetime
 from prometheus_api_client import MetricsList
+from .test_with_metrics import TestWithMetrics
 
 
-class TestMetricsList(unittest.TestCase):
+class TestMetricsList(unittest.TestCase, TestWithMetrics.Common):
+    """unit tests for MetricsList Class."""
+
     def setUp(self):
-        """
-        read metrics stored as jsons in './tests/metrics'
-        """
-        self.raw_metrics_list = list()
-        for (dir_path, _, file_names) in os.walk("./tests/metrics"):
-            self.raw_metrics_list.extend(
-                [json.load(open(os.path.join(dir_path, file))) for file in file_names]
-            )
-
-    def test_setup(self):
-        """
-        Check if setup was done correctly
-        """
-        self.assertEqual(
-            8, len(self.raw_metrics_list), "incorrect number json files read (incorrect test setup)"
-        )
+        self.loadMetrics()
 
     def test_init(self):
         """

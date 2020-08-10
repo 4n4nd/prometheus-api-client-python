@@ -1,29 +1,15 @@
 """unit tests for Metrics Class."""
 import unittest
-import json
-import os
 import datetime
 from prometheus_api_client import Metric
+from .test_with_metrics import TestWithMetrics
 
 
-class TestMetric(unittest.TestCase):
+class TestMetric(unittest.TestCase, TestWithMetrics.Common):
     """unit tests for Metrics Class."""
 
     def setUp(self):
-        """
-        read metrics stored as jsons in './tests/metrics'
-        """
-        self.raw_metrics_list = list()
-        for (dir_path, _, file_names) in os.walk("./tests/metrics"):
-            self.raw_metrics_list.extend(
-                [json.load(open(os.path.join(dir_path, file))) for file in file_names]
-            )
-
-    def test_setup(self):
-        """
-        Check if setup was done correctly
-        """
-        self.assertEqual(8, len(self.raw_metrics_list), "incorrect number json files read")
+        self.loadMetrics()
 
     def test_init(self):
         test_metric_object = Metric(self.raw_metrics_list[0][0])
@@ -66,7 +52,6 @@ class TestMetric(unittest.TestCase):
             _ = Metric(self.raw_metrics_list[0][0]) + Metric(self.raw_metrics_list[0][1])
 
         sum_metric = Metric(self.raw_metrics_list[0][0]) + Metric(self.raw_metrics_list[1][0])
-        print(sum_metric)
         self.assertIsInstance(sum_metric, Metric, msg="The sum is not a Metric")
         self.assertEqual(
             sum_metric.start_time,

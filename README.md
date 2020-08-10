@@ -19,3 +19,7 @@ To install directly from this branch:
 ## Links
 
 - [Documentation](https://prometheus-api-client-python.readthedocs.io/en/master/source/prometheus_api_client.html)
+
+## Running tests
+
+`PROM_URL="http://prometheus-route-aiops-prod-prometheus-predict.cloud.paas.psi.redhat.com/" pytest`
