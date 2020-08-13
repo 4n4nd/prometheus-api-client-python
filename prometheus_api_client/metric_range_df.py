@@ -53,7 +53,7 @@ class MetricRangeDataFrame(DataFrame):
         dtype: Optional[Dtype] = None,
         copy: bool = False,
     ):
-        """Constructor for MetricRangeDataFrame class."""
+        """Functions as a constructor for MetricRangeDataFrame class."""
         if data is not None:
             # if just a single json instead of list/set/other sequence of jsons,
             # treat as list with single entry

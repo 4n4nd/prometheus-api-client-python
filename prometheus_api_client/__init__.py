@@ -3,8 +3,8 @@
 __title__ = "prometheus-connect"
 __version__ = "0.4.0"
 
-from .prometheus_connect import *
-from .metric import Metric
-from .metrics_list import MetricsList
-from .metric_snapshot_df import MetricSnapshotDataFrame
-from .metric_range_df import MetricRangeDataFrame
+from .prometheus_connect import *  # noqa F403
+from .metric import Metric  # noqa F401
+from .metrics_list import MetricsList  # noqa F401
+from .metric_snapshot_df import MetricSnapshotDataFrame  # noqa F401
+from .metric_range_df import MetricRangeDataFrame  # noqa F401

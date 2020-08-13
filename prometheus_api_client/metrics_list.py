@@ -24,7 +24,6 @@ class MetricsList(list):
 
     def __init__(self, metric_data_list):
         """Class MetricsList constructor."""
-
         if not isinstance(metric_data_list, list):
             metric_data_list = [metric_data_list]
 

@@ -1,12 +1,13 @@
+"""Common functions used for Metrics Class."""
+
 import json
 import os
 
-class TestWithMetrics:
-    class Common(object):
-        def loadMetrics(self):
-            """
-            read metrics stored as jsons in './tests/metrics'
-            """
+
+class TestWithMetrics:  # noqa D101
+    class Common(object):  # noqa D106
+        def load_metrics(self):
+            """Read metrics stored as jsons in './tests/metrics'."""
             self.raw_metrics_list = list()
             self.raw_metrics_labels = list()
             files = list()
@@ -28,7 +29,5 @@ class TestWithMetrics:
                     self.raw_metrics_labels.append(labels)
 
         def test_setup(self):
-            """
-            Check if setup was done correctly
-            """
+            """Check if setup was done correctly."""
             self.assertEqual(8, len(self.raw_metrics_list), "incorrect number json files read")

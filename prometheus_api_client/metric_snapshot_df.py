@@ -49,13 +49,13 @@ class MetricSnapshotDataFrame(DataFrame):
     def __init__(
         self,
         data=None,
-        ts_values_keep: str = 'last',
+        ts_values_keep: str = "last",
         index: Optional[Axes] = None,
         columns: Optional[Axes] = None,
         dtype: Optional[Dtype] = None,
         copy: bool = False,
     ):
-        """Constructor for MetricSnapshotDataFrame class."""
+        """Functions as a constructor for MetricSnapshotDataFrame class."""
         if data is not None:
             # if just a single json instead of list/set/other sequence of jsons,
             # treat as list with single entry

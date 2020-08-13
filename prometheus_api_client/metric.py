@@ -9,7 +9,7 @@ try:
 
     register_matplotlib_converters()
     _MPL_FOUND = True
-except ImportError as exce:
+except ImportError as exce:  # noqa F841
     _MPL_FOUND = False
 
 
@@ -44,7 +44,7 @@ class Metric:
     """
 
     def __init__(self, metric, oldest_data_datetime=None):
-        """Constructor for the Metric object."""
+        """Functions as a Constructor for the Metric object."""
         if not isinstance(
             oldest_data_datetime, (datetime.datetime, datetime.timedelta, type(None))
         ):
