@@ -217,3 +217,18 @@
 * Update README.md
 * Update README.md
 * Update README.md
+
+## Release 0.4.1 (2020-09-02T12:18:03)
+### Features
+* Updated the get_metric_aggregations to return global aggregations for both range query and current time query
+* :hatching_chick: follow pre-commit compliance for the application
+* :truck: include aicoe-ci configuration file with pytest env vars
+* add metricrangedf and tests (#137)
+### Improvements
+* Make tests pass: ensure ordering of fixtures. (#140)
+* Deduplicate creation of MetricsList.
+### Automatic Updates
+* :pushpin: Automatic update of dependency matplotlib from 3.3.0 to 3.3.1 (#148)
+* :pushpin: Automatic update of dependency matplotlib from 3.3.0 to 3.3.1 (#147)
+* :pushpin: Automatic update of dependency pandas from 1.1.0 to 1.1.1 (#146)
+* :pushpin: Automatic update of dependency pandas from 1.0.5 to 1.1.0
