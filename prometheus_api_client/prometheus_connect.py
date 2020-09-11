@@ -45,7 +45,7 @@ class PrometheusConnect:
         disable_ssl: bool = False,
         retry: Retry = None,
         use_cache: bool = False,
-        cache_dir: str = None
+        cache_dir: str = None,
     ):
         """Functions as a Constructor for the class PrometheusConnect."""
         if url is None:
@@ -57,10 +57,9 @@ class PrometheusConnect:
         self._all_metrics = None
         self.ssl_verification = not disable_ssl
 
+        self._cache = None
         if use_cache:
             self._cache = DiskCache(cache_dir=cache_dir)
-        else:
-            self._cache = None
 
         if retry is None:
             retry = Retry(
@@ -103,8 +102,7 @@ class PrometheusConnect:
         params = params or {}
 
         self._all_metrics = self._cached_get(
-            "{0}/api/v1/label/__name__/values".format(self.url),
-            params=params
+            "{0}/api/v1/label/__name__/values".format(self.url), params=params
         )
         return self._all_metrics
 
@@ -132,7 +130,6 @@ class PrometheusConnect:
             ``prom.get_current_metric_value(metric_name='up', label_config=my_label_config)``
         """
         params = params or {}
-        data = []
         if label_config:
             label_list = [str(key + "=" + "'" + label_config[key] + "'") for key in label_config]
             query = metric_name + "{" + ",".join(label_list) + "}"
@@ -141,8 +138,7 @@ class PrometheusConnect:
 
         # using the query API to get raw data
         return self._cached_get(
-            "{0}/api/v1/query".format(self.url),
-            params={**{"query": query}, **params}
+            "{0}/api/v1/query".format(self.url), params={**{"query": query}, **params}
         )
 
     def get_metric_range_data(
@@ -218,15 +214,15 @@ class PrometheusConnect:
                         "time": start + chunk_seconds,
                     },
                     **params,
-                }
+                },
             )
 
-            data += chunk['result']
+            data += chunk["result"]
 
             if store_locally:
                 self._store_metric_values_local(
                     metric_name,
-                    #json.dumps(response.json()["data"]["result"]),
+                    # json.dumps(response.json()["data"]["result"]),
                     chunk,
                     start + chunk_seconds,
                 )
@@ -307,10 +303,7 @@ class PrometheusConnect:
             return cached
 
         response = self._session.get(
-            url,
-            verify=self.ssl_verification,
-            headers=self.headers,
-            params=params
+            url, verify=self.ssl_verification, headers=self.headers, params=params
         )
 
         if response.status_code == 200:
@@ -323,7 +316,6 @@ class PrometheusConnect:
                 "HTTP Status Code {} ({})".format(response.status_code, response.content)
             )
         return data
-
 
     def custom_query(self, query: str, params: dict = None):
         """
@@ -343,9 +335,8 @@ class PrometheusConnect:
         """
         params = params or {}
         return self._cached_get(
-            "{0}/api/v1/query".format(self.url),
-            params={**{"query": query}, **params}
-        )['result']
+            "{0}/api/v1/query".format(self.url), params={**{"query": query}, **params}
+        )["result"]
 
     def custom_query_range(
         self, query: str, start_time: datetime, end_time: datetime, step: str, params: dict = None
@@ -375,12 +366,8 @@ class PrometheusConnect:
         # using the query_range API to get raw data
         return self._cached_get(
             "{0}/api/v1/query_range".format(self.url),
-            params={**{"query": query,
-                       "start": start,
-                       "end": end,
-                       "step": step},
-                    **params}
-        )['result']
+            params={**{"query": query, "start": start, "end": end, "step": step}, **params},
+        )["result"]
 
     def get_metric_aggregation(
         self,
