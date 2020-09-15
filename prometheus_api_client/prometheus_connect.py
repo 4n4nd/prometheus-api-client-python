@@ -286,11 +286,11 @@ class PrometheusConnect:
 
     @staticmethod
     def _cache_key(url, params):
-        h = hashlib.md5()
+        h = hashlib.sha224()
         h.update((json.dumps(params) + url).encode())
         return h.hexdigest()
 
-    def _cached_get(self, url, params={}):
+    def _cached_get(self, url, params):
         cached = None
         key = None
         data = None
