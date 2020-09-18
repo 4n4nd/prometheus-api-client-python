@@ -125,7 +125,7 @@ Overloading operator =, to check whether two metrics are the same (are the same 
 metric_1 = Metric(metric_data_1)
 metric_2 = Metric(metric_data_2)
 print(metric_1 == metric_2) # will print True if they belong to the same time-series
-```                              
+```
 
 ##### Plotting Metric Objects
 Plot a very simple line graph for the metric time series:
