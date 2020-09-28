@@ -142,6 +142,58 @@ my_metric_object = metrics_object_list[1] # one of the metrics from the list
 my_metric_object.plot()
 ```
 
+#### Getting Metrics Data as pandas DataFrames
+To perform data analysis and manipulation, it is often helpful to have the data represented using a [pandas DataFrame](https://pandas.pydata.org/docs/user_guide/dsintro.html#dataframe). There are two modules in this library that can be used to process the raw metrics fetched into a DataFrame.
+
+The `MetricSnapshotDataFrame` module converts "current metric value" data to a DataFrame representation, and the `MetricRangeDataFrame` converts "metric range values" data to a DataFrame representation. Example usage of these classes can be seen below:
+
+```python
+import datetime as dt
+from prometheus_api_client import PrometheusConnect,  MetricSnapshotDataFrame, MetricRangeDataFrame
+
+prom = PrometheusConnect()
+my_label_config = {'cluster': 'my_cluster_id', 'label_2': 'label_2_value'}
+
+# metric current values
+metric_data = prom.get_current_metric_value(
+    metric_name='up',
+    label_config=my_label_config,
+)
+metric_df = MetricSnapshotDataFrame(metric_data)
+metric_df.head()
+""" Output:
++-------------------------+-----------------+------------+-------+
+| __name__ | cluster      | label_2         | timestamp  | value |
++==========+==============+=================+============+=======+
+| up       | cluster_id_0 | label_2_value_2 | 1577836800 | 0     |
++-------------------------+-----------------+------------+-------+
+| up       | cluster_id_1 | label_2_value_3 | 1577836800 | 1     |
++-------------------------+-----------------+------------+-------+
+"""
+
+# metric values for a range of timestamps
+metric_data = prom.get_metric_range_data(
+    metric_name='up',
+    label_config=my_label_config,
+    start_time=(dt.datetime.now() - dt.timedelta(minutes=30)),
+    end_time=dt.datetime.now(),
+)
+metric_df = MetricRangeDataFrame(metric_data)
+metric_df.head()
+""" Output:
++------------+------------+-----------------+--------------------+-------+
+|            |  __name__  | cluster         | label_2            | value |
++-------------------------+-----------------+--------------------+-------+
+| timestamp  |            |                 |                    |       |
++============+============+=================+====================+=======+
+| 1577836800 | up         | cluster_id_0    | label_2_value_2    | 0     |
++-------------------------+-----------------+--------------------+-------+
+| 1577836801 | up         | cluster_id_1    | label_2_value_3    | 1     |
++-------------------------+-----------------+------------=-------+-------+
+"""
+```
+
+
 For more functions included in the `prometheus-api-client` library, please refer to this [documentation.](https://prometheus-api-client-python.readthedocs.io/en/master/source/prometheus_api_client.html)
 
 ## Running tests
