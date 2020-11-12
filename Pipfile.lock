@@ -330,10 +330,11 @@
         },
         "httmock": {
             "hashes": [
-                "sha256:e0bbaced224426bcd994a5f1c64ab60e0c923ea615825c53e6c0190b2a7341fe"
+                "sha256:13e6c63f135a928e15d386af789a2890efb03e0e280f29bdc9961f3f0dc34cb9",
+                "sha256:44eaf4bb59cc64cd6f5d8bf8700b46aa3097cc5651b9bc85c527dfbc71792f41"
             ],
             "index": "pypi",
-            "version": "==1.3.0"
+            "version": "==1.4.0"
         },
         "idna": {
             "hashes": [
