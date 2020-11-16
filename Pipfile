@@ -5,6 +5,8 @@ verify_ssl = true
 
 [dev-packages]
 httmock = "*"
+sphinx = "*"
+sphinx_rtd_theme = "*"
 
 [packages]
 requests = "*"
@@ -15,4 +17,3 @@ numpy = "*"
 
 [requires]
 python_version = "3.6"
-pandas_version = ">=1.0.0"
