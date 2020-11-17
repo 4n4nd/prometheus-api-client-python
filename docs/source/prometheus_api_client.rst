@@ -45,6 +45,14 @@ prometheus\_api\_client.metric\_snapshot\_df module
    :undoc-members:
    :show-inheritance:
 
+prometheus\_api\_client.metric\_range\_df module
+---------------------------------------------------
+
+.. automodule:: prometheus_api_client.metric_range_df
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 
