@@ -2,7 +2,6 @@
 from urllib.parse import urlparse
 import bz2
 import os
-import sys
 import json
 import logging
 import numpy
