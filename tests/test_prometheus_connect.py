@@ -82,12 +82,17 @@ class TestPrometheusConnect(unittest.TestCase):
             < metric_objects_list[0].end_time.timestamp(),
             "invalid metric end time (with given chunk_size)",
         )
+        
 
     def test_get_metric_range_data_with_incorrect_input_types(self):  # noqa D102
         start_time = datetime.now() - timedelta(minutes=20)
         chunk_size = timedelta(minutes=7)
         end_time = datetime.now() - timedelta(minutes=10)
 
+        with self.assertRaises(ValueError, msg="specified chunk_size is too big"):
+            _ = self.pc.get_metric_range_data(
+                metric_name="up", start_time=datetime("3d"), end_time=datetime("now"), chunk_size=timedelta("now", "6d")
+            )
         with self.assertRaises(TypeError, msg="start_time accepted invalid value type"):
             _ = self.pc.get_metric_range_data(
                 metric_name="up", start_time="20m", end_time=end_time, chunk_size=chunk_size
