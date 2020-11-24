@@ -82,7 +82,6 @@ class TestPrometheusConnect(unittest.TestCase):
             < metric_objects_list[0].end_time.timestamp(),
             "invalid metric end time (with given chunk_size)",
         )
-        
 
     def test_get_metric_range_data_with_incorrect_input_types(self):  # noqa D102
         start_time = datetime.now() - timedelta(minutes=20)
