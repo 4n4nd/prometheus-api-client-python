@@ -64,6 +64,19 @@ class PrometheusConnect:
         self._session = requests.Session()
         self._session.mount(self.url, HTTPAdapter(max_retries=retry))
 
+    def check_prometheus_availability(self, params: dict = None) -> bool:
+        """Check database metrics (Prometheus) availability."""
+        response = self._session.get(
+            "{0}/".format(self.url),
+            verify=self.ssl_verification,
+            headers=self.headers,
+            params=params,
+        )
+        if not response.ok:
+            return False
+
+        return True
+
     def all_metrics(self, params: dict = None):
         """
         Get the list of all the metrics that the prometheus host scrapes.
