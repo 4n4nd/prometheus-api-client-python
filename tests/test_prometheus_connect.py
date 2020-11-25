@@ -90,8 +90,8 @@ class TestPrometheusConnect(unittest.TestCase):
 
         with self.assertRaises(ValueError, msg="specified chunk_size is too big"):
             _ = self.pc.get_metric_range_data(
-                metric_name="up", start_time=start_time, end_time=end_time, chunk_size=timedelta(minutes=30)
-            )
+                metric_name="up", start_time=start_time, end_time=end_time,
+                chunk_size=timedelta(minutes=30))
         with self.assertRaises(TypeError, msg="start_time accepted invalid value type"):
             _ = self.pc.get_metric_range_data(
                 metric_name="up", start_time="20m", end_time=end_time, chunk_size=chunk_size
