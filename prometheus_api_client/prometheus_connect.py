@@ -2,7 +2,6 @@
 from urllib.parse import urlparse
 import bz2
 import os
-import sys
 import json
 import logging
 import numpy
@@ -190,7 +189,7 @@ class PrometheusConnect:
         end = round(end_time.timestamp())
 
         if (end_time - start_time).total_seconds() < chunk_size.total_seconds():
-            sys.exit("specified chunk_size is too big")
+            raise ValueError("specified chunk_size is too big")
         chunk_seconds = round(chunk_size.total_seconds())
 
         if label_config:
