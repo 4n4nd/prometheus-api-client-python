@@ -77,10 +77,7 @@ class PrometheusConnect:
             headers=self.headers,
             params=params,
         )
-        if not response.ok:
-            return False
-
-        return True
+        return response.ok
 
     def all_metrics(self, params: dict = None):
         """
