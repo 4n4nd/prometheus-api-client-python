@@ -63,6 +63,22 @@ class PrometheusConnect:
         self._session = requests.Session()
         self._session.mount(self.url, HTTPAdapter(max_retries=retry))
 
+    def check_prometheus_connection(self, params: dict = None) -> bool:
+        """
+        Check Promethus connection.
+
+        :param params: (dict) Optional dictionary containing parameters to be
+            sent along with the API request.
+        :returns: (bool) True if the endpoint can be reached, False if cannot be reached.
+        """
+        response = self._session.get(
+            "{0}/".format(self.url),
+            verify=self.ssl_verification,
+            headers=self.headers,
+            params=params,
+        )
+        return response.ok
+
     def all_metrics(self, params: dict = None):
         """
         Get the list of all the metrics that the prometheus host scrapes.
