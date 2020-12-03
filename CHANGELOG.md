@@ -232,3 +232,27 @@
 * :pushpin: Automatic update of dependency matplotlib from 3.3.0 to 3.3.1 (#147)
 * :pushpin: Automatic update of dependency pandas from 1.1.0 to 1.1.1 (#146)
 * :pushpin: Automatic update of dependency pandas from 1.0.5 to 1.1.0
+
+## Release 0.4.2 (2020-12-03T16:47:55)
+### Features
+* Add method to check connection to Prometheus (#181)
+*  feat: replaced exit with ValueError (#182)
+* Add MetricRangeDataFrame to RTD. Add sphinx to Pipfile. (#177)
+* Update example notebook (#166)
+* Add description of MetricSnapshotDataFrame,MetricRangeDataFrame to README
+* :sparkles: now with an OWNERS file, so that Thoth bots can help you even more
+* Updating the readme
+### Bug Fixes
+* :sparkles: fixes to make pre-commit happy
+### Automatic Updates
+* :pushpin: Automatic update of dependency httmock from 1.3.0 to 1.4.0 (#172)
+* :pushpin: Automatic update of dependency numpy from 1.19.2 to 1.19.4 (#171)
+* :pushpin: Automatic update of dependency matplotlib from 3.3.2 to 3.3.3 (#170)
+* :pushpin: Automatic update of dependency dateparser from 0.7.6 to 1.0.0 (#168)
+* :pushpin: Automatic update of dependency requests from 2.24.0 to 2.25.0 (#167)
+* :pushpin: Automatic update of dependency numpy from 1.19.1 to 1.19.2 (#162)
+* :pushpin: Automatic update of dependency numpy from 1.19.1 to 1.19.2 (#161)
+* :pushpin: Automatic update of dependency matplotlib from 3.3.1 to 3.3.2 (#160)
+* :pushpin: Automatic update of dependency numpy from 1.19.1 to 1.19.2 (#155)
+* :pushpin: Automatic update of dependency matplotlib from 3.3.1 to 3.3.2 (#158)
+* :pushpin: Automatic update of dependency pandas from 1.1.1 to 1.1.2 (#154)
