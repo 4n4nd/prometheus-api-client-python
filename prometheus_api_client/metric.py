@@ -39,7 +39,7 @@ class Metric:
         ``Here metric_data is a list of metrics received from prometheus``
 
         ``# only for the first item in the list``
-        ``my_metric_object = Metric(metric_data[0], datetime.timedelta(days=10)) ``
+        ``my_metric_object = Metric(metric_data[0], datetime.timedelta(days=10))``
 
     """
 
