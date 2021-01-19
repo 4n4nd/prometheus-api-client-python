@@ -16,6 +16,8 @@ To install directly from this branch:
 
 ## Links
 
+- [Slack](https://join.slack.com/share/zt-kw3v8t1e-hbcVH7X7bXORiQuQtsNZ4A)
+- [Google Chat](https://chat.google.com/room/AAAAzFPwq5s)
 - [Documentation](https://prometheus-api-client-python.readthedocs.io/en/master/source/prometheus_api_client.html)
 
 ## Getting Started
