@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 httmock = "*"
+mock = "*"
 sphinx = "*"
 sphinx_rtd_theme = "*"
 

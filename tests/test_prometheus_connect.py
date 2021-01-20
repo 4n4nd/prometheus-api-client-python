@@ -6,6 +6,8 @@ from datetime import datetime, timedelta
 import requests
 from requests.packages.urllib3.util.retry import Retry
 
+from mock import patch
+
 from prometheus_api_client import MetricsList, PrometheusConnect, PrometheusApiClientException
 
 from .mocked_network import BaseMockedNetworkTestcase
@@ -196,3 +198,36 @@ class TestPrometheusConnectWithMockedNetwork(BaseMockedNetworkTestcase):
             self.assertEqual(handler.call_count, 1)
             request = handler.requests[0]
             self.assertEqual(request.path_url, "/api/v1/label/__name__/values")
+
+
+class TestPrometheusConnectCached(unittest.TestCase):
+    """Caching is enabled for these testcases."""
+
+    def setUp(self):
+        """Set up connection settings for prometheus."""
+        self.prometheus_host = os.getenv("PROM_URL")
+        self.pc = PrometheusConnect(url=self.prometheus_host, disable_ssl=True, use_cache=True)
+
+    def test_get_metric_range_data_uses_cache(self):  # noqa D102
+        assert self.pc._cache
+
+        end_time = datetime.now()
+        start_time = end_time - timedelta(minutes=10)
+
+        with patch.object(self.pc._cache, "store", wraps=None) as wrapped_cache_store:
+            self.pc.get_metric_range_data(
+                metric_name="up", start_time=start_time, end_time=end_time
+            )
+            wrapped_cache_store.assert_called_once()
+
+    def test_get_metric_range_uses_stored_data(self):  # noqa D102
+        end_time = datetime.now()
+        start_time = end_time - timedelta(minutes=10)
+
+        self.pc.get_metric_range_data(metric_name="up", start_time=start_time, end_time=end_time)
+
+        with patch.object(self.pc._cache, "store", wraps=None) as wrapped_cache_store:
+            self.pc.get_metric_range_data(
+                metric_name="up", start_time=start_time, end_time=end_time
+            )
+            self.assertEqual(wrapped_cache_store.call_count, 0)
