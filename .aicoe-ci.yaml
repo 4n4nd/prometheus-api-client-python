@@ -1,7 +1,8 @@
+---
 check:
   - thoth-pytest
   - thoth-precommit
 pytest-env:
-  PROM_URL: "http://prometheus-route-aiops-prod-prometheus-predict.cloud.paas.psi.redhat.com/"
+  PROM_URL: "http://prometheus-portal-opf-monitoring.apps.zero.massopen.cloud/"
 release:
   - upload-pypi-sesheta
