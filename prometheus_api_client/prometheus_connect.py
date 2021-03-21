@@ -195,7 +195,7 @@ class PrometheusConnect:
 
         if not (isinstance(start_time, datetime) and isinstance(end_time, datetime)):
             raise TypeError("start_time and end_time can only be of type datetime.datetime")
-        
+
         if end_time < start_time:
             raise ValueError("Start time must be earlier than End time ")
 
@@ -206,7 +206,6 @@ class PrometheusConnect:
 
         start = round(start_time.timestamp())
         end = round(end_time.timestamp())
-        
 
         if (end_time - start_time).total_seconds() < chunk_size.total_seconds():
             raise ValueError("specified chunk_size is too big")
