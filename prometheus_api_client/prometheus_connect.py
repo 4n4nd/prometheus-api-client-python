@@ -374,6 +374,8 @@ class PrometheusConnect:
             verify=self.ssl_verification,
             headers=self.headers,
         )
+        if end_time < start_time:
+            raise ValueError("Start time must be earlier than End time ")
         if response.status_code == 200:
             data = response.json()["data"]["result"]
         else:
@@ -423,6 +425,9 @@ class PrometheusConnect:
                 'max': 6.009373
              }
         """
+        if start_time is not None and end_time is not None:
+            if end_time < start_time:
+                raise ValueError("Start time must be earlier than End time ")
         if not isinstance(operations, list):
             raise TypeError("Operations can be only of type list")
         if len(operations) == 0:

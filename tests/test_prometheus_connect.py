@@ -52,7 +52,6 @@ class TestPrometheusConnect(unittest.TestCase):
             < metric_objects_list[0].end_time.timestamp(),
             "invalid metric end time",
         )
-        self.assertFalse(end_time < start_time, "invalid metric end time")
 
     def test_get_metric_range_data_with_chunk_size(self):  # noqa D102
         start_time = datetime.now() - timedelta(minutes=65)
@@ -89,6 +88,10 @@ class TestPrometheusConnect(unittest.TestCase):
         chunk_size = timedelta(minutes=7)
         end_time = datetime.now() - timedelta(minutes=10)
 
+        with self.assertRaises(ValueError, msg="Start time must be earlier than End time "):
+            _ = self.pc.get_metric_range_data(
+                metric_name="up", start_time=end_time, end_time=start_time, chunk_size=chunk_size
+            )
         with self.assertRaises(ValueError, msg="specified chunk_size is too big"):
             _ = self.pc.get_metric_range_data(
                 metric_name="up",
