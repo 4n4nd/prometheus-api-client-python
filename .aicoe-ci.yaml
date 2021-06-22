@@ -3,6 +3,6 @@ check:
   - thoth-pytest
   - thoth-precommit
 pytest-env:
-  PROM_URL: "http://prometheus-portal-opf-monitoring.apps.zero.massopen.cloud/"
+  PROM_URL: "http://demo.robustperception.io:9090/"
 release:
   - upload-pypi-sesheta
