@@ -200,7 +200,7 @@ For more functions included in the `prometheus-api-client` library, please refer
 
 ## Running tests
 
-`PROM_URL="http://prometheus-route-aiops-prod-prometheus-predict.cloud.paas.psi.redhat.com/" pytest`
+`PROM_URL="http://demo.robustperception.io:9090/" pytest`
 
 ## Code Styling and Linting
 
