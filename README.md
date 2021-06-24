@@ -93,14 +93,14 @@ metric_object_list = MetricsList(metric_data) # metric_object_list will be initi
                                               # metrics downloaded using get_metric query
 
 # We can see what each of the metric objects look like
-for item in metrics_object_list:
+for item in metric_object_list:
     print(item.metric_name, item.label_config, "\n")
 ```
 
 Each of the items in the `metric_object_list` are initialized as a `Metric` class object. Let's look at one of the metrics from the `metric_object_list` to learn more about the `Metric` class:
 
 ```python
-my_metric_object = metrics_object_list[1] # one of the metrics from the list
+my_metric_object = metric_object_list[1] # one of the metrics from the list
 print(my_metric_object)
 ```
 
@@ -140,7 +140,7 @@ my_label_config = {'cluster': 'my_cluster_id', 'label_2': 'label_2_value'}
 metric_data = prom.get_metric_range_data(metric_name='up', label_config=my_label_config)
 
 metric_object_list = MetricsList(metric_data)
-my_metric_object = metrics_object_list[1] # one of the metrics from the list
+my_metric_object = metric_object_list[1] # one of the metrics from the list
 my_metric_object.plot()
 ```
 
