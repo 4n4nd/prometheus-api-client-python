@@ -72,6 +72,31 @@ class TestMetricSnapshotDataFrame(unittest.TestCase):  # noqa D101
             "incorrect dataframe shape when initialized with single json list",
         )
 
+    def test_init_multiple_metrics(self):
+        """
+        Tests to ensure multiple metric values provided as strings are
+        properly cast to a numeric value (in this case, a float).
+
+        """
+        raw_data = [
+            {
+                "metric": {
+                    "fake": "data",
+                },
+                "value": [1627485628.789, "26.82068965517243"],
+            },
+            {
+                "metric": {
+                    "fake": "data",
+                },
+                "value": [1627485628.789, "26.82068965517243"],
+            },
+        ]
+
+        test_df = MetricSnapshotDataFrame(data=raw_data)
+
+        self.assertTrue(isinstance(test_df["value"][0], float))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -82,4 +82,4 @@ class MetricSnapshotDataFrame(DataFrame):
     @staticmethod
     def _get_nth_ts_value_pair(i: dict, n: int):
         val = i["values"][n] if "values" in i else i["value"]
-        return {"timestamp": val[0], "value": val[1]}
+        return {"timestamp": val[0], "value": float(val[1])}
