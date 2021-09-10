@@ -18,28 +18,30 @@ class Metric:
     A Class for `Metric` object.
 
     :param metric: (dict) A metric item from the list of metrics received from prometheus
-    :param oldest_data_datetime: (datetime|timedelta) Any metric values in the dataframe that are \
-                    older than this value will be deleted when new data is added to the dataframe \
+    :param oldest_data_datetime: (datetime|timedelta) Any metric values in the dataframe that are
+                    older than this value will be deleted when new data is added to the dataframe
                     using the __add__("+") operator.
 
-                    * `oldest_data_datetime=datetime.timedelta(days=2)`, will delete the \
-                    metric data that is 2 days older than the latest metric. \
-                    The dataframe is pruned only when new data is added to it. \n
-                    * `oldest_data_datetime=datetime.datetime(2019,5,23,12,0)`, will delete \
-                    any data that is older than "23 May 2019 12:00:00" \n
-                    * `oldest_data_datetime=datetime.datetime.fromtimestamp(1561475156)` \
-                    can also be set using the unix timestamp
+                    * `oldest_data_datetime=datetime.timedelta(days=2)`, will delete the
+                      metric data that is 2 days older than the latest metric.
+                      The dataframe is pruned only when new data is added to it.
+                    * `oldest_data_datetime=datetime.datetime(2019,5,23,12,0)`, will delete
+                      any data that is older than "23 May 2019 12:00:00"
+                    * `oldest_data_datetime=datetime.datetime.fromtimestamp(1561475156)`
+                      can also be set using the unix timestamp
 
     Example Usage:
-        ``prom = PrometheusConnect()``
+      .. code-block:: python
 
-        ``my_label_config = {'cluster': 'my_cluster_id', 'label_2': 'label_2_value'}``
+          prom = PrometheusConnect()
 
-        ``metric_data = prom.get_metric_range_data(metric_name='up', label_config=my_label_config)``
-        ``Here metric_data is a list of metrics received from prometheus``
+          my_label_config = {'cluster': 'my_cluster_id', 'label_2': 'label_2_value'}
 
-        ``# only for the first item in the list``
-        ``my_metric_object = Metric(metric_data[0], datetime.timedelta(days=10))``
+          metric_data = prom.get_metric_range_data(metric_name='up', label_config=my_label_config)
+          # Here metric_data is a list of metrics received from prometheus
+
+          # only for the first item in the list
+          my_metric_object = Metric(metric_data[0], datetime.timedelta(days=10))
 
     """
 
@@ -85,11 +87,13 @@ class Metric:
         Check whether two metrics are the same (are the same time-series regardless of their data)
 
         Example Usage:
-            ``metric_1 = Metric(metric_data_1)``
+          .. code-block:: python
 
-            ``metric_2 = Metric(metric_data_2)``
+              metric_1 = Metric(metric_data_1)
 
-            ``print(metric_1 == metric_2) # will print True if they belong to the same time-series``
+              metric_2 = Metric(metric_data_2)
+
+              print(metric_1 == metric_2) # will print True if they belong to the same time-series
 
         :return: (bool) If two Metric objects belong to the same time-series,
                  i.e. same name and label config, it will return True, else False
@@ -103,9 +107,11 @@ class Metric:
         Make it print in a cleaner way when print function is used on a Metric object.
 
         Example Usage:
-            ``metric_1 = Metric(metric_data_1)``
+          .. code-block:: python
 
-            ``print(metric_1) # will print the name, labels and the head of the dataframe``
+              metric_1 = Metric(metric_data_1)
+
+              print(metric_1) # will print the name, labels and the head of the dataframe
 
         """
         name = "metric_name: " + repr(self.metric_name) + "\n"
@@ -130,11 +136,11 @@ class Metric:
                                             # will also be set in ``metric_12``
                                             # (like ``oldest_data_datetime``)
 
-        :return: (`Metric`) Returns a `Metric` object with the combined metric data \
-        of the two added metrics
+        :return: (`Metric`) Returns a `Metric` object with the combined metric data
+          of the two added metrics
 
-        :raises: (TypeError) Raises an exception when two metrics being added are \
-        from different metric time-series
+        :raises: (TypeError) Raises an exception when two metrics being added are
+          from different metric time-series
         """
         if self == other:
             new_metric = deepcopy(self)
