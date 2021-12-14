@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 httmock = "*"
+pytest = "*"
 sphinx = "*"
 sphinx-rtd-theme = "*"
 
@@ -16,4 +17,4 @@ matplotlib = "*"
 numpy = "*"
 
 [requires]
-python_version = "3.6"
+python_version = "3.8"
