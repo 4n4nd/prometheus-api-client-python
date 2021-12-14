@@ -206,6 +206,9 @@ class PrometheusConnect:
         start = round(start_time.timestamp())
         end = round(end_time.timestamp())
 
+        if end_time < start_time:
+            raise ValueError("end_time must not be before start_time")
+
         if (end_time - start_time).total_seconds() < chunk_size.total_seconds():
             raise ValueError("specified chunk_size is too big")
         chunk_seconds = round(chunk_size.total_seconds())
