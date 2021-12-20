@@ -1,5 +1,6 @@
 """Unit Tests for MetricRangeDataFrame."""
 import unittest
+import pandas as pd
 from prometheus_api_client import MetricRangeDataFrame
 from .test_with_metrics import TestWithMetrics
 
@@ -34,8 +35,9 @@ class TestMetricRangeDataFrame(unittest.TestCase, TestWithMetrics.Common):  # no
         """Test if dataframe contains the correct timestamp indices."""
         # check that the timestamp indices in each series are the same
         for curr_metric_list in self.raw_metrics_list:
+            curr_df = MetricRangeDataFrame(curr_metric_list, ts_floats_to_datetime=False)
             self.assertEqual(
-                set(MetricRangeDataFrame(curr_metric_list).index.values),
+                set(curr_df.index.values),
                 set([v[0] for s in curr_metric_list for v in s["values"]]),
             )
 
@@ -48,6 +50,23 @@ class TestMetricRangeDataFrame(unittest.TestCase, TestWithMetrics.Common):  # no
                 curr_metric_labels.union({"value"}),
                 set(MetricRangeDataFrame(curr_metric_list).columns),
                 "incorrect dataframe columns",
+            )
+
+    def test_timestamp_dtype_conversion(self):
+        """Test if the timestamp in the dataframe initialized has correct dtype."""
+        for curr_metric_list in self.raw_metrics_list:
+            # index (prometheus metric timestamps) should be datetime type by default
+            curr_df = MetricRangeDataFrame(curr_metric_list)
+            self.assertTrue(
+                isinstance(curr_df.index, pd.DatetimeIndex),
+                "incorrect dtype for timestamp column (expected datetime dtype)",
+            )
+
+            # if explicitly set to false, conversion to dt shouldnt take place
+            curr_df = MetricRangeDataFrame(curr_metric_list, ts_floats_to_datetime=False)
+            self.assertFalse(
+                isinstance(curr_df.index, pd.DatetimeIndex),
+                "incorrect dtype for timestamp column (expected non-datetime dtype)",
             )
 
     def test_init_single_metric(self):
