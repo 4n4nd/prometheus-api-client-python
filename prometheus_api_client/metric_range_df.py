@@ -24,7 +24,7 @@ class MetricRangeDataFrame(DataFrame):
                  default to list of labels + "timestamp" + "value" if not provided.
     :param dtype: (dtype) default None. Data type to force. Only a single dtype is allowed. If None, infer.
     :param copy: (bool) default False. Copy data from inputs. Only affects DataFrame / 2d ndarray input.
-    :param ts_floats_to_datetime: (bool) default True. Convert the timestamps returned by prometheus
+    :param ts_as_datetime: (bool) default True. Convert the timestamps returned by prometheus
                  from float64 (unix time) to pandas datetime objects. This results in a pd.DatetimeIndex
                  as the dtype of the index of the returned dataframe, instead of pd.Float64Index
 
@@ -55,7 +55,7 @@ class MetricRangeDataFrame(DataFrame):
         columns: Optional[Axes] = None,
         dtype: Optional[Dtype] = None,
         copy: bool = False,
-        ts_floats_to_datetime: bool = True,
+        ts_as_datetime: bool = True,
     ):
         """Functions as a constructor for MetricRangeDataFrame class."""
         if data is not None:
@@ -79,7 +79,7 @@ class MetricRangeDataFrame(DataFrame):
         )
 
         # convert to DateTime type instead of Float64
-        if ts_floats_to_datetime:
+        if ts_as_datetime:
             self["timestamp"] = to_datetime(self["timestamp"], unit="s")
 
         self.set_index(["timestamp"], inplace=True)

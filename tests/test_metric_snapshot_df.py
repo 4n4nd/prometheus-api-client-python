@@ -64,7 +64,7 @@ class TestMetricSnapshotDataFrame(unittest.TestCase):  # noqa D101
             )
 
             # if explicitly set to false, conversion to dt shouldnt take place
-            curr_df = MetricSnapshotDataFrame(curr_metric_list, ts_floats_to_datetime=False,)
+            curr_df = MetricSnapshotDataFrame(curr_metric_list, ts_as_datetime=False,)
             self.assertFalse(
                 is_dtype_datetime(curr_df["timestamp"]),
                 "incorrect dtype for timestamp column (expected non-datetime dtype)",

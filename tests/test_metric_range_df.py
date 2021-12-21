@@ -35,7 +35,7 @@ class TestMetricRangeDataFrame(unittest.TestCase, TestWithMetrics.Common):  # no
         """Test if dataframe contains the correct timestamp indices."""
         # check that the timestamp indices in each series are the same
         for curr_metric_list in self.raw_metrics_list:
-            curr_df = MetricRangeDataFrame(curr_metric_list, ts_floats_to_datetime=False)
+            curr_df = MetricRangeDataFrame(curr_metric_list, ts_as_datetime=False)
             self.assertEqual(
                 set(curr_df.index.values),
                 set([v[0] for s in curr_metric_list for v in s["values"]]),
@@ -63,7 +63,7 @@ class TestMetricRangeDataFrame(unittest.TestCase, TestWithMetrics.Common):  # no
             )
 
             # if explicitly set to false, conversion to dt shouldnt take place
-            curr_df = MetricRangeDataFrame(curr_metric_list, ts_floats_to_datetime=False)
+            curr_df = MetricRangeDataFrame(curr_metric_list, ts_as_datetime=False)
             self.assertFalse(
                 isinstance(curr_df.index, pd.DatetimeIndex),
                 "incorrect dtype for timestamp column (expected non-datetime dtype)",

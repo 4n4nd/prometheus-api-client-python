@@ -26,7 +26,7 @@ class MetricSnapshotDataFrame(DataFrame):
     :param copy: (bool) default False. Copy data from inputs. Only affects DataFrame / 2d ndarray input.
     :param ts_values_keep: (str) If several timestamp-value tuples are returned for a given
                  metric + label config, determine which one to keep. Currently only supports 'first', 'last'.
-    :param ts_floats_to_datetime: (bool) default True. Convert the timestamps returned by prometheus
+    :param ts_as_datetime: (bool) default True. Convert the timestamps returned by prometheus
                  from float64 (unix time) to pandas datetime objects. This results in the timestamp column
                  of the returned dataframe to be of dtype datetime64[ns] instead float64
 
@@ -58,7 +58,7 @@ class MetricSnapshotDataFrame(DataFrame):
         dtype: Optional[Dtype] = None,
         copy: bool = False,
         ts_values_keep: str = "last",
-        ts_floats_to_datetime: bool = True,
+        ts_as_datetime: bool = True,
     ):
         """Functions as a constructor for MetricSnapshotDataFrame class."""
         if data is not None:
@@ -85,7 +85,7 @@ class MetricSnapshotDataFrame(DataFrame):
         )
 
         # convert to DateTime type instead of Float64
-        if ts_floats_to_datetime:
+        if ts_as_datetime:
             self["timestamp"] = to_datetime(self["timestamp"], unit="s")
 
     @staticmethod
