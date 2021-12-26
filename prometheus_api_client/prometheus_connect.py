@@ -107,6 +107,34 @@ class PrometheusConnect:
             )
         return self._all_metrics
 
+    def get_label_values(self, label_name: str, params: dict = None):
+        """
+        Get a list of all values for the label.
+
+        :label_name: (str) The name of the label for which you want to get all the values.
+        :param params: (dict) Optional dictionary containing GET parameters to be
+            sent along with the API request, such as "time"
+        :returns: (list) A list of names for the label from the specified prometheus host
+        :raises:
+            (RequestException) Raises an exception in case of a connection error
+            (PrometheusApiClientException) Raises in case of non 200 response status code
+        """
+        params = params or {}
+        response = self._session.get(
+            "{0}/api/v1/label/{1}/values".format(self.url, label_name),
+            verify=self.ssl_verification,
+            headers=self.headers,
+            params=params,
+        )
+
+        if response.status_code == 200:
+            labels = response.json()["data"]
+        else:
+            raise PrometheusApiClientException(
+                "HTTP Status Code {} ({!r})".format(response.status_code, response.content)
+            )
+        return labels
+
     def get_current_metric_value(
         self, metric_name: str, label_config: dict = None, params: dict = None
     ):
