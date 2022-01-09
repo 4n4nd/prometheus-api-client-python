@@ -23,6 +23,11 @@ class TestPrometheusConnect(unittest.TestCase):
         """Check if setup was done correctly."""
         metrics_list = self.pc.all_metrics()
         self.assertTrue(len(metrics_list) > 0, "no metrics received from prometheus")
+        # Checking that the results of all_metrics() and get_label_values("__name__") are the same.
+        self.assertEqual(metrics_list, self.pc.get_label_values("__name__"))
+        # Check for the "job" label.
+        label_values = self.pc.get_label_values("job")
+        self.assertTrue(len(label_values) > 0, "no metrics received from prometheus")
 
     def test_get_metric_range_data(self):  # noqa D102
         start_time = datetime.now() - timedelta(minutes=10)
@@ -159,9 +164,18 @@ class TestPrometheusConnectWithMockedNetwork(BaseMockedNetworkTestcase):
                 self.pc.all_metrics()
         self.assertEqual("HTTP Status Code 403 (b'Unauthorized')", str(exc.exception))
 
+        with self.mock_response("Unauthorized", status_code=403):
+            with self.assertRaises(PrometheusApiClientException) as exc:
+                self.pc.get_label_values("label_name")
+        self.assertEqual("HTTP Status Code 403 (b'Unauthorized')", str(exc.exception))
+
     def test_broken_responses(self):  # noqa D102
         with self.assertRaises(PrometheusApiClientException) as exc:
             self.pc.all_metrics()
+        self.assertEqual("HTTP Status Code 403 (b'BOOM!')", str(exc.exception))
+
+        with self.assertRaises(PrometheusApiClientException) as exc:
+            self.pc.get_label_values("label_name")
         self.assertEqual("HTTP Status Code 403 (b'BOOM!')", str(exc.exception))
 
         with self.assertRaises(PrometheusApiClientException) as exc:
@@ -196,3 +210,12 @@ class TestPrometheusConnectWithMockedNetwork(BaseMockedNetworkTestcase):
             self.assertEqual(handler.call_count, 1)
             request = handler.requests[0]
             self.assertEqual(request.path_url, "/api/v1/label/__name__/values")
+
+    def test_get_label_values_method(self):  # noqa D102
+        all_metrics_payload = {"status": "success", "data": ["value1", "value2"]}
+
+        with self.mock_response(all_metrics_payload) as handler:
+            self.assertTrue(len(self.pc.get_label_values("label_name")))
+            self.assertEqual(handler.call_count, 1)
+            request = handler.requests[0]
+            self.assertEqual(request.path_url, "/api/v1/label/label_name/values")
