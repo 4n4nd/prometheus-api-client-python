@@ -3,6 +3,8 @@ from pandas import DataFrame
 from pandas._typing import Axes, Dtype
 from typing import Optional, Sequence
 
+from prometheus_api_client.exceptions import MetricValueConversionFailed
+
 
 class MetricSnapshotDataFrame(DataFrame):
     """Subclass to format and represent Prometheus query response as pandas.DataFrame.
@@ -82,4 +84,10 @@ class MetricSnapshotDataFrame(DataFrame):
     @staticmethod
     def _get_nth_ts_value_pair(i: dict, n: int):
         val = i["values"][n] if "values" in i else i["value"]
-        return {"timestamp": val[0], "value": float(val[1])}
+        value = val[1]
+        if isinstance(value, str):
+            try:
+                value = float(value)
+            except TypeError:
+                raise MetricValueConversionFailed("Converting string metric value to float failed.")
+        return {"timestamp": val[0], "value": value}
