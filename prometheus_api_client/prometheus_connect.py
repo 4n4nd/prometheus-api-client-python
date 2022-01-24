@@ -124,11 +124,13 @@ class PrometheusConnect:
             (PrometheusApiClientException) Raises in case of non 200 response status code
 
         Example Usage:
-            ``prom = PrometheusConnect()``
+          .. code-block:: python
 
-            ``my_label_config = {'cluster': 'my_cluster_id', 'label_2': 'label_2_value'}``
+              prom = PrometheusConnect()
 
-            ``prom.get_current_metric_value(metric_name='up', label_config=my_label_config)``
+              my_label_config = {'cluster': 'my_cluster_id', 'label_2': 'label_2_value'}
+
+              prom.get_current_metric_value(metric_name='up', label_config=my_label_config)
         """
         params = params or {}
         data = []
@@ -203,6 +205,9 @@ class PrometheusConnect:
 
         start = round(start_time.timestamp())
         end = round(end_time.timestamp())
+
+        if end_time < start_time:
+            raise ValueError("end_time must not be before start_time")
 
         if (end_time - start_time).total_seconds() < chunk_size.total_seconds():
             raise ValueError("specified chunk_size is too big")
@@ -400,21 +405,23 @@ class PrometheusConnect:
         the result of the query and the values are extracted from the result.
 
         :param query: (str) This is a PromQL query, a few examples can be found
-        at https://prometheus.io/docs/prometheus/latest/querying/examples/
+          at https://prometheus.io/docs/prometheus/latest/querying/examples/
         :param operations: (list) A list of operations to perform on the values.
-        Operations are specified in string type.
+          Operations are specified in string type.
         :param start_time: (datetime) A datetime object that specifies the query range start time.
         :param end_time: (datetime) A datetime object that specifies the query range end time.
         :param step: (str) Query resolution step width in duration format or float number of seconds
         :param params: (dict) Optional dictionary containing GET parameters to be
-        sent along with the API request, such as "timeout"
-        Available operations - sum, max, min, variance, nth percentile, deviation
-        and average.
+          sent along with the API request, such as "timeout"
+          Available operations - sum, max, min, variance, nth percentile, deviation
+          and average.
 
         :returns: (dict) A dict of aggregated values received in response to the operations
-        performed on the values for the query sent.
+          performed on the values for the query sent.
 
-        Example output :
+        Example output:
+          .. code-block:: python
+
             {
                 'sum': 18.05674,
                 'max': 6.009373
