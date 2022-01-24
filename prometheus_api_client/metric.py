@@ -47,7 +47,7 @@ class Metric:
 
     """
 
-    def __init__(self, metric, oldest_data_datetime=None, value_as_type=float):
+    def __init__(self, metric, oldest_data_datetime=None):
         """Functions as a Constructor for the Metric object."""
         if not isinstance(
             oldest_data_datetime, (datetime.datetime, datetime.timedelta, type(None))
