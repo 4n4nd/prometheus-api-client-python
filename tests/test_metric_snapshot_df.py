@@ -3,6 +3,7 @@ import unittest
 import json
 import os
 from prometheus_api_client import MetricSnapshotDataFrame
+from pandas.api.types import is_datetime64_any_dtype as is_dtype_datetime
 
 
 class TestMetricSnapshotDataFrame(unittest.TestCase):  # noqa D101
@@ -50,6 +51,23 @@ class TestMetricSnapshotDataFrame(unittest.TestCase):  # noqa D101
                 curr_metric_labels.union({"timestamp", "value"}),
                 set(MetricSnapshotDataFrame(curr_metric_list).columns),
                 "incorrect dataframe columns",
+            )
+
+    def test_timestamp_dtype_conversion(self):
+        """Test if the timestamp in the dataframe initialized has correct dtype."""
+        for curr_metric_list in self.raw_metrics_list:
+            # timestamp column should be datetime type by default
+            curr_df = MetricSnapshotDataFrame(curr_metric_list,)
+            self.assertTrue(
+                is_dtype_datetime(curr_df["timestamp"]),
+                "incorrect dtype for timestamp column (expected datetime dtype)",
+            )
+
+            # if explicitly set to false, conversion to dt shouldnt take place
+            curr_df = MetricSnapshotDataFrame(curr_metric_list, ts_as_datetime=False,)
+            self.assertFalse(
+                is_dtype_datetime(curr_df["timestamp"]),
+                "incorrect dtype for timestamp column (expected non-datetime dtype)",
             )
 
     def test_init_single_metric(self):
