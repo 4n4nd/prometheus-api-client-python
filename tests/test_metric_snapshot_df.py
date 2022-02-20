@@ -2,7 +2,11 @@
 import unittest
 import json
 import os
+
+import pytest
+
 from prometheus_api_client import MetricSnapshotDataFrame
+from prometheus_api_client.exceptions import MetricValueConversionError
 
 
 class TestMetricSnapshotDataFrame(unittest.TestCase):  # noqa D101
@@ -82,6 +86,18 @@ class TestMetricSnapshotDataFrame(unittest.TestCase):  # noqa D101
         test_df = MetricSnapshotDataFrame(data=raw_data)
 
         self.assertTrue(isinstance(test_df["value"][0], float))
+
+    def test_init_invalid_float_error(self):
+        """Ensures metric values provided as strings are properly cast to a numeric value (in this case, a float)."""
+        raw_data = [
+            {
+                "metric": {"fake": "data",},
+                "value": [1627485628.789, "26.8206896551724326.82068965517243"],
+            },
+        ]
+
+        with pytest.raises(MetricValueConversionError):
+            MetricSnapshotDataFrame(data=raw_data)
 
 
 if __name__ == "__main__":

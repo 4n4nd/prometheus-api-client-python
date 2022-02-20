@@ -1,7 +1,11 @@
 """Unit tests for Metrics Class."""
 import unittest
 import datetime
+
+import pytest
+
 from prometheus_api_client import Metric
+from prometheus_api_client.exceptions import MetricValueConversionError
 from .test_with_metrics import TestWithMetrics
 
 
@@ -95,6 +99,27 @@ class TestMetric(unittest.TestCase, TestWithMetrics.Common):
         self.assertEqual(
             expected_start_time, new_metric.start_time, "Incorrect Start time after addition"
         )
+
+    def test_init_valid_string_metric_value(self):
+        """Ensures metric values provided as strings are properly cast to a numeric value (in this case, a float)."""
+        test_metric = Metric(
+            metric={
+                "metric": {"__name__": "test_metric", "fake": "data",},
+                "value": [1627485628.789, "26.82068965517243"],
+            }
+        )
+
+        self.assertTrue(isinstance(test_metric, Metric))
+
+    def test_init_invalid_string_metric_value(self):
+        """Ensures metric values provided as strings are properly cast to a numeric value (in this case, a float)."""
+        with pytest.raises(MetricValueConversionError):
+            Metric(
+                metric={
+                    "metric": {"__name__": "test_metric", "fake": "data",},
+                    "value": [1627485628.789, "26.8206896551724326.82068965517243"],
+                }
+            )
 
 
 if __name__ == "__main__":

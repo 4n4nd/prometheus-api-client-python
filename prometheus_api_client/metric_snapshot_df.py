@@ -88,6 +88,6 @@ class MetricSnapshotDataFrame(DataFrame):
         if isinstance(value, str):
             try:
                 value = float(value)
-            except TypeError:
+            except (TypeError, ValueError):
                 raise MetricValueConversionError("Converting string metric value to float failed.")
         return {"timestamp": val[0], "value": value}

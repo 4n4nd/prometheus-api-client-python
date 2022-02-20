@@ -73,7 +73,7 @@ class MetricRangeDataFrame(DataFrame):
                 if isinstance(metric_value, str):
                     try:
                         metric_value = float(metric_value)
-                    except TypeError:
+                    except (TypeError, ValueError):
                         raise MetricValueConversionError(
                             "Converting string metric value to float failed."
                         )
