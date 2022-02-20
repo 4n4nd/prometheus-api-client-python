@@ -3,7 +3,7 @@ from copy import deepcopy
 import datetime
 import pandas
 
-from prometheus_api_client.exceptions import MetricValueConversionFailed
+from prometheus_api_client.exceptions import MetricValueConversionError
 
 try:
     import matplotlib.pyplot as plt
@@ -77,7 +77,7 @@ class Metric:
                     try:
                         metric_value = float(metric_value)
                     except TypeError:
-                        raise MetricValueConversionFailed(
+                        raise MetricValueConversionError(
                             "Converting string metric value to float failed."
                         )
                 metric["values"] = [[datestamp, metric_value]]

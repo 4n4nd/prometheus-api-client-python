@@ -3,7 +3,7 @@ from pandas import DataFrame
 from pandas._typing import Axes, Dtype
 from typing import Optional, Sequence
 
-from prometheus_api_client.exceptions import MetricValueConversionFailed
+from prometheus_api_client.exceptions import MetricValueConversionError
 
 
 class MetricRangeDataFrame(DataFrame):
@@ -74,7 +74,7 @@ class MetricRangeDataFrame(DataFrame):
                     try:
                         metric_value = float(metric_value)
                     except TypeError:
-                        raise MetricValueConversionFailed(
+                        raise MetricValueConversionError(
                             "Converting string metric value to float failed."
                         )
                 row_data.append({**v["metric"], "timestamp": t[0], "value": metric_value})

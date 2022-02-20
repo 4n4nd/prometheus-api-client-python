@@ -7,7 +7,7 @@ class PrometheusApiClientException(Exception):
     pass
 
 
-class MetricValueConversionFailed(Exception):
+class MetricValueConversionError(Exception):
     """Raises when we find a metric that is a string where we fail to convert it to a float."""
 
     pass
