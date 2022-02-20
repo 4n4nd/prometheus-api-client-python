@@ -1,5 +1,5 @@
 """A pandas.DataFrame subclass for Prometheus range vector responses."""
-from pandas import DataFrame
+from pandas import DataFrame, to_datetime
 from pandas._typing import Axes, Dtype
 from typing import Optional, Sequence
 
@@ -26,6 +26,9 @@ class MetricRangeDataFrame(DataFrame):
                  default to list of labels + "timestamp" + "value" if not provided.
     :param dtype: (dtype) default None. Data type to force. Only a single dtype is allowed. If None, infer.
     :param copy: (bool) default False. Copy data from inputs. Only affects DataFrame / 2d ndarray input.
+    :param ts_as_datetime: (bool) default True. Convert the timestamps returned by prometheus
+                 from float64 (unix time) to pandas datetime objects. This results in a pd.DatetimeIndex
+                 as the dtype of the index of the returned dataframe, instead of pd.Float64Index
 
     Example Usage:
       .. code-block:: python
@@ -54,6 +57,7 @@ class MetricRangeDataFrame(DataFrame):
         columns: Optional[Axes] = None,
         dtype: Optional[Dtype] = None,
         copy: bool = False,
+        ts_as_datetime: bool = True,
     ):
         """Functions as a constructor for MetricRangeDataFrame class."""
         if data is not None:
@@ -83,5 +87,9 @@ class MetricRangeDataFrame(DataFrame):
         super(MetricRangeDataFrame, self).__init__(
             data=row_data, index=index, columns=columns, dtype=dtype, copy=copy
         )
+
+        # convert to DateTime type instead of Float64
+        if ts_as_datetime:
+            self["timestamp"] = to_datetime(self["timestamp"], unit="s")
 
         self.set_index(["timestamp"], inplace=True)

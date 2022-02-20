@@ -1,5 +1,5 @@
 """A pandas.DataFrame subclass for Prometheus query response."""
-from pandas import DataFrame
+from pandas import DataFrame, to_datetime
 from pandas._typing import Axes, Dtype
 from typing import Optional, Sequence
 
@@ -20,14 +20,18 @@ class MetricSnapshotDataFrame(DataFrame):
 
     :param data: (list|json) A single metric (json with keys "metric" and "values"/"value")
         or list of such metrics received from Prometheus as a response to query
-    :param ts_values_keep: (str) If several timestamp-value tuples are returned for a given
-        metric + label config, determine which one to keep. Currently only supports 'first', 'last'.
     :param index: (pandas.Index|array-like) Index to use for resulting dataframe. Will default to
                  pandas.RangeIndex if no indexing information part of input data and no index provided.
     :param columns: (pandas.Index|array-like) Column labels to use for resulting dataframe. Will
                  default to list of labels + "timestamp" + "value" if not provided.
     :param dtype: (dtype) default None. Data type to force. Only a single dtype is allowed. If None, infer.
     :param copy: (bool) default False. Copy data from inputs. Only affects DataFrame / 2d ndarray input.
+    :param ts_values_keep: (str) If several timestamp-value tuples are returned for a given
+                 metric + label config, determine which one to keep. Currently only supports 'first', 'last'.
+    :param ts_as_datetime: (bool) default True. Convert the timestamps returned by prometheus
+                 from float64 (unix time) to pandas datetime objects. This results in the timestamp column
+                 of the returned dataframe to be of dtype datetime64[ns] instead float64
+
 
     Example Usage:
       .. code-block:: python
@@ -51,11 +55,12 @@ class MetricSnapshotDataFrame(DataFrame):
     def __init__(
         self,
         data=None,
-        ts_values_keep: str = "last",
         index: Optional[Axes] = None,
         columns: Optional[Axes] = None,
         dtype: Optional[Dtype] = None,
         copy: bool = False,
+        ts_values_keep: str = "last",
+        ts_as_datetime: bool = True,
     ):
         """Functions as a constructor for MetricSnapshotDataFrame class."""
         if data is not None:
@@ -80,6 +85,10 @@ class MetricSnapshotDataFrame(DataFrame):
         super(MetricSnapshotDataFrame, self).__init__(
             data=data, index=index, columns=columns, dtype=dtype, copy=copy
         )
+
+        # convert to DateTime type instead of Float64
+        if ts_as_datetime:
+            self["timestamp"] = to_datetime(self["timestamp"], unit="s")
 
     @staticmethod
     def _get_nth_ts_value_pair(i: dict, n: int):
