@@ -1,7 +1,10 @@
 """Unit Tests for MetricRangeDataFrame."""
 import unittest
 import pandas as pd
+import pytest
+
 from prometheus_api_client import MetricRangeDataFrame
+from prometheus_api_client.exceptions import MetricValueConversionError
 from .test_with_metrics import TestWithMetrics
 
 
@@ -89,6 +92,30 @@ class TestMetricRangeDataFrame(unittest.TestCase, TestWithMetrics.Common):  # no
             MetricRangeDataFrame([self.raw_metrics_list[0][0]]).shape,
             "incorrect dataframe shape when initialized with single json list",
         )
+
+    def test_init_invalid_string_value(self):
+        """Ensures metric values provided as concatenated strings are caught with a meaningful exception."""
+        with pytest.raises(MetricValueConversionError):
+            MetricRangeDataFrame(
+                {
+                    "metric": {"__name__": "test_metric", "fake": "data",},
+                    "values": [[1627485628.789, "26.8206896551724326.82068965517243"]],
+                }
+            )
+
+    def test_init_valid_string_value(self):
+        """Ensures metric values provided as a string but are valid floats are processed properly."""
+
+        results = MetricRangeDataFrame(
+                {
+                    "metric": {"__name__": "test_metric", "fake": "data",},
+                    "values": [[1627485628.789, "26.82068965517243"]],
+                }
+            )
+
+        shape = results.shape
+
+        self.assertEqual((1, 3), results.shape)
 
 
 if __name__ == "__main__":
