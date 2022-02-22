@@ -105,15 +105,12 @@ class TestMetricRangeDataFrame(unittest.TestCase, TestWithMetrics.Common):  # no
 
     def test_init_valid_string_value(self):
         """Ensures metric values provided as a string but are valid floats are processed properly."""
-
         results = MetricRangeDataFrame(
-                {
-                    "metric": {"__name__": "test_metric", "fake": "data",},
-                    "values": [[1627485628.789, "26.82068965517243"]],
-                }
-            )
-
-        shape = results.shape
+            {
+                "metric": {"__name__": "test_metric", "fake": "data",},
+                "values": [[1627485628.789, "26.82068965517243"]],
+            }
+        )
 
         self.assertEqual((1, 3), results.shape)
 
