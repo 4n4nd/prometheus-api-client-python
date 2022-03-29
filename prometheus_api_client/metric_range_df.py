@@ -3,6 +3,8 @@ from pandas import DataFrame, to_datetime
 from pandas._typing import Axes, Dtype
 from typing import Optional, Sequence
 
+from prometheus_api_client.exceptions import MetricValueConversionError
+
 
 class MetricRangeDataFrame(DataFrame):
     """Subclass to format and represent Prometheus query response as pandas.DataFrame.
@@ -71,7 +73,15 @@ class MetricRangeDataFrame(DataFrame):
                     "data must be a range vector. Expected range vector, got instant vector"
                 )
             for t in v["values"]:
-                row_data.append({**v["metric"], "timestamp": t[0], "value": t[1]})
+                metric_value = t[1]
+                if isinstance(metric_value, str):
+                    try:
+                        metric_value = float(metric_value)
+                    except (TypeError, ValueError):
+                        raise MetricValueConversionError(
+                            "Converting string metric value to float failed."
+                        )
+                row_data.append({**v["metric"], "timestamp": t[0], "value": metric_value})
 
         # init df normally now
         super(MetricRangeDataFrame, self).__init__(

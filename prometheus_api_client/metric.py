@@ -3,6 +3,8 @@ from copy import deepcopy
 import datetime
 import pandas
 
+from prometheus_api_client.exceptions import MetricValueConversionError
+
 try:
     import matplotlib.pyplot as plt
     from pandas.plotting import register_matplotlib_converters
@@ -69,7 +71,16 @@ class Metric:
 
             # if it is a single value metric change key name
             if "value" in metric:
-                metric["values"] = [metric["value"]]
+                datestamp = metric["value"][0]
+                metric_value = metric["value"][1]
+                if isinstance(metric_value, str):
+                    try:
+                        metric_value = float(metric_value)
+                    except (TypeError, ValueError):
+                        raise MetricValueConversionError(
+                            "Converting string metric value to float failed."
+                        )
+                metric["values"] = [[datestamp, metric_value]]
 
             self.metric_values = pandas.DataFrame(metric["values"], columns=["ds", "y"]).apply(
                 pandas.to_numeric, errors="raise"
