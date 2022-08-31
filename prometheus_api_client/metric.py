@@ -155,9 +155,10 @@ class Metric:
         """
         if self == other:
             new_metric = deepcopy(self)
-            new_metric.metric_values = new_metric.metric_values.concat(
-                other.metric_values, ignore_index=True
-            )
+            new_metric.metric_values = pandas.concat([new_metric.metric_values,other.metric_values],ignore_index=True)
+            # new_metric.metric_values = new_metric.metric_values.concat(
+            #     other.metric_values, ignore_index=True
+            # )
             new_metric.metric_values = new_metric.metric_values.dropna()
             new_metric.metric_values = (
                 new_metric.metric_values.drop_duplicates("ds")
