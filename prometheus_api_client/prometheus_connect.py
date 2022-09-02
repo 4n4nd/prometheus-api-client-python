@@ -485,7 +485,7 @@ class PrometheusConnect:
             elif operation == "deviation":
                 aggregated_values["deviation"] = numpy.std(np_array)
             elif operation == "variance":
-                aggregated_values["deviation"] = numpy.var(np_array)
+                aggregated_values["variance"] = numpy.var(np_array)
             else:
                 raise TypeError("Invalid operation: " + operation)
         return aggregated_values
