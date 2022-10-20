@@ -12,7 +12,7 @@ sphinx-rtd-theme = "*"
 [packages]
 requests = "*"
 dateparser = "*"
-pandas = ">=1.0.0"
+pandas = ">=1.4.0"
 matplotlib = "*"
 numpy = "*"
 
