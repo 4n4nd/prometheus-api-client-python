@@ -34,6 +34,8 @@ class PrometheusConnect:
     :param disable_ssl: (bool) If set to True, will disable ssl certificate verification
         for the http requests made to the prometheus host
     :param retry: (Retry) Retry adapter to retry on HTTP errors
+    :param auth: (optional) Auth tuple to enable Basic/Digest/Custom HTTP Auth. See python
+        requests library auth parameter for further explanation.
     """
 
     def __init__(
@@ -42,6 +44,7 @@ class PrometheusConnect:
         headers: dict = None,
         disable_ssl: bool = False,
         retry: Retry = None,
+        auth: tuple = None
     ):
         """Functions as a Constructor for the class PrometheusConnect."""
         if url is None:
@@ -60,6 +63,8 @@ class PrometheusConnect:
                 status_forcelist=RETRY_ON_STATUS,
             )
 
+        self.auth = auth
+
         self._session = requests.Session()
         self._session.mount(self.url, HTTPAdapter(max_retries=retry))
 
@@ -76,6 +81,7 @@ class PrometheusConnect:
             verify=self.ssl_verification,
             headers=self.headers,
             params=params,
+            auth=self.auth,
         )
         return response.ok
 
@@ -112,6 +118,7 @@ class PrometheusConnect:
             verify=self.ssl_verification,
             headers=self.headers,
             params=params,
+            auth=self.auth,
         )
 
         if response.status_code == 200:
@@ -161,6 +168,7 @@ class PrometheusConnect:
             params={**{"query": query}, **params},
             verify=self.ssl_verification,
             headers=self.headers,
+            auth=self.auth,
         )
 
         if response.status_code == 200:
@@ -251,6 +259,7 @@ class PrometheusConnect:
                 },
                 verify=self.ssl_verification,
                 headers=self.headers,
+                auth=self.auth,
             )
             if response.status_code == 200:
                 data += response.json()["data"]["result"]
@@ -348,6 +357,7 @@ class PrometheusConnect:
             params={**{"query": query}, **params},
             verify=self.ssl_verification,
             headers=self.headers,
+            auth=self.auth,
         )
         if response.status_code == 200:
             data = response.json()["data"]["result"]
@@ -390,6 +400,7 @@ class PrometheusConnect:
             params={**{"query": query, "start": start, "end": end, "step": step}, **params},
             verify=self.ssl_verification,
             headers=self.headers,
+            auth=self.auth,
         )
         if response.status_code == 200:
             data = response.json()["data"]["result"]
