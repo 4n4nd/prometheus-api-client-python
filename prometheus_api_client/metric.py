@@ -5,16 +5,6 @@ import pandas
 
 from prometheus_api_client.exceptions import MetricValueConversionError
 
-try:
-    import matplotlib.pyplot as plt
-    from pandas.plotting import register_matplotlib_converters
-
-    register_matplotlib_converters()
-    _MPL_FOUND = True
-except ImportError as exce:  # noqa F841
-    _MPL_FOUND = False
-
-
 class Metric:
     r"""
     A Class for `Metric` object.
@@ -91,10 +81,8 @@ class Metric:
         self.start_time = self.metric_values.iloc[0, 0]
         self.end_time = self.metric_values.iloc[-1, 0]
 
-        if _MPL_FOUND:
-            # We store the matplotpy plot information as Class variables
-            Metric._fig = None
-            Metric._axis = None
+        # We store the plot information as Class variable
+        Metric._plot = None
 
     def __eq__(self, other):
         """
@@ -192,24 +180,19 @@ class Metric:
             error_string = "Different metric labels"
         raise TypeError("Cannot Add different metric types. " + error_string)
 
-    def plot(self, *args,  **kwargs):
+    _metric_plot = None
+
+    def plot(self, *args, **kwargs):
         """Plot a very simple line graph for the metric time-series."""
-        if _MPL_FOUND:
-            if not Metric._fig:
-                # One graph with potentially  N lines - if plot() is called twice
-                Metric._fig, Metric._axis = plt.subplots(*args, **kwargs)
-            Metric._axis.plot_date(self.metric_values.ds, self.metric_values.y,
-                linestyle="solid",
-                label=str(self.metric_name)
-            )
-            Metric._fig.autofmt_xdate()
-            # These are provided for documentation reasons only - it's presumptuous for this code to call them
-            # Metric._axis.set_xlabel('Date/Time')
-            # Metric._axis.set_ylabel('Metric')
-            # Metric._axis.set_title('Prometheus')
-            if len(Metric._axis.lines) > 1:
-                # We show a legend (or update the legend) if there's more than line on the plot
-                Metric._axis.legend()
-        # if matplotlib was not imported
-        else:
-            raise ImportError("matplotlib was not found")
+        if not Metric._metric_plot:
+            from prometheus_api_client.metric_plot import MetricPlot
+            Metric._metric_plot = MetricPlot(*args, **kwargs)
+        metric = self
+        Metric._metric_plot.plot_date(metric)
+
+    def show(self, block=None):
+        """Plot a very simple line graph for the metric time-series."""
+        if not Metric._metric_plot:
+            # can't show before plot
+            TypeError("Invalid operation: Can't show() before plot()")
+        Metric._metric_plot.show(block)
