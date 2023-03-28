@@ -187,10 +187,10 @@ class Metric:
             error_string = "Different metric labels"
         raise TypeError("Cannot Add different metric types. " + error_string)
 
-    def plot(self):
+    def plot(self, *args,  **kwargs):
         """Plot a very simple line graph for the metric time-series."""
         if _MPL_FOUND:
-            fig, axis = plt.subplots()
+            fig, axis = plt.subplots(*args, **kwargs)
             axis.plot_date(self.metric_values.ds, self.metric_values.y, linestyle=":")
             fig.autofmt_xdate()
         # if matplotlib was not imported
