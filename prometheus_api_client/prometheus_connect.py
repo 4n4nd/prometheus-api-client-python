@@ -44,7 +44,8 @@ class PrometheusConnect:
         headers: dict = None,
         disable_ssl: bool = False,
         retry: Retry = None,
-        auth: tuple = None
+        auth: tuple = None,
+        proxy: dict = None
     ):
         """Functions as a Constructor for the class PrometheusConnect."""
         if url is None:
@@ -66,6 +67,8 @@ class PrometheusConnect:
         self.auth = auth
 
         self._session = requests.Session()
+        if proxy is not None:
+            self._session.proxies = proxy
         self._session.mount(self.url, HTTPAdapter(max_retries=retry))
 
     def check_prometheus_connection(self, params: dict = None) -> bool:
