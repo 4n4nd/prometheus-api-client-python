@@ -36,6 +36,8 @@ class PrometheusConnect:
     :param retry: (Retry) Retry adapter to retry on HTTP errors
     :param auth: (optional) Auth tuple to enable Basic/Digest/Custom HTTP Auth. See python
         requests library auth parameter for further explanation.
+    :param proxy: (Optional) Proxies dictonary to enable connection through proxy. 
+        Example: {"http_proxy": "<ip_address/hostname:port>", "https_proxy": "<ip_address/hostname:port>"}  
     """
 
     def __init__(
