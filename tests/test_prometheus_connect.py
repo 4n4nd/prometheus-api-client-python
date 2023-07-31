@@ -135,6 +135,11 @@ class TestPrometheusConnect(unittest.TestCase):
         with self.assertRaises(requests.exceptions.RetryError, msg="too many 400 error responses"):
             pc.custom_query("BOOM.BOOM!#$%")
 
+    def test_get_label_names_method(self):  # noqa D102
+        labels = self.pc.get_label_names(params={"match[]": "up"})
+        self.assertEqual(len(labels), 4)
+        self.assertEqual(labels, ["__name__", "env", "instance", "job"])
+
 
 class TestPrometheusConnectWithMockedNetwork(BaseMockedNetworkTestcase):
     """Network is blocked in this testcase, see base class."""
@@ -210,6 +215,15 @@ class TestPrometheusConnectWithMockedNetwork(BaseMockedNetworkTestcase):
             self.assertEqual(handler.call_count, 1)
             request = handler.requests[0]
             self.assertEqual(request.path_url, "/api/v1/label/__name__/values")
+
+    def test_get_label_names_method(self):  # noqa D102
+        all_metrics_payload = {"status": "success", "data": ["value1", "value2"]}
+
+        with self.mock_response(all_metrics_payload) as handler:
+            self.assertTrue(len(self.pc.get_label_names()))
+            self.assertEqual(handler.call_count, 1)
+            request = handler.requests[0]
+            self.assertEqual(request.path_url, "/api/v1/labels")
 
     def test_get_label_values_method(self):  # noqa D102
         all_metrics_payload = {"status": "success", "data": ["value1", "value2"]}
