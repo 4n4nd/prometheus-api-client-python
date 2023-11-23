@@ -34,6 +34,7 @@ class PrometheusConnect:
     :param disable_ssl: (bool) If set to True, will disable ssl certificate verification
         for the http requests made to the prometheus host
     :param retry: (Retry) Retry adapter to retry on HTTP errors
+    :param pool_size: (int) Number of connections that can be used. Default is 10
     :param auth: (optional) Auth tuple to enable Basic/Digest/Custom HTTP Auth. See python
         requests library auth parameter for further explanation.
     :param proxy: (Optional) Proxies dictonary to enable connection through proxy. 
@@ -46,6 +47,7 @@ class PrometheusConnect:
         headers: dict = None,
         disable_ssl: bool = False,
         retry: Retry = None,
+        pool_size: int = 10,
         auth: tuple = None,
         proxy: dict = None
     ):
@@ -66,12 +68,13 @@ class PrometheusConnect:
                 status_forcelist=RETRY_ON_STATUS,
             )
 
+        self.pool_size = pool_size
         self.auth = auth
 
         self._session = requests.Session()
         if proxy is not None:
             self._session.proxies = proxy
-        self._session.mount(self.url, HTTPAdapter(max_retries=retry))
+        self._session.mount(self.url, HTTPAdapter(max_retries=retry, pool_maxsize=self.pool_size))
 
     def check_prometheus_connection(self, params: dict = None) -> bool:
         """
