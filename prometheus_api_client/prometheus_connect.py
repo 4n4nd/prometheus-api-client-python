@@ -60,7 +60,6 @@ class PrometheusConnect:
         self.url = url
         self.prometheus_host = urlparse(self.url).netloc
         self._all_metrics = None
-        self.ssl_verification = not disable_ssl
 
         if retry is None:
             retry = Retry(
@@ -71,7 +70,11 @@ class PrometheusConnect:
 
         self.auth = auth
 
-        self._session = session if session is not None else requests.Session()
+        if session is not None:
+            self._session == session
+        else:
+            self._session = requests.Session()
+            self._session.verify = not disable_ssl
 
         if proxy is not None:
             self._session.proxies = proxy
@@ -87,7 +90,7 @@ class PrometheusConnect:
         """
         response = self._session.get(
             "{0}/".format(self.url),
-            verify=self.ssl_verification,
+            verify=self._session.verify,
             headers=self.headers,
             params=params,
             auth=self.auth,
@@ -124,7 +127,7 @@ class PrometheusConnect:
         params = params or {}
         response = self._session.get(
             "{0}/api/v1/labels".format(self.url),
-            verify=self.ssl_verification,
+            verify=self._session.verify,
             headers=self.headers,
             params=params,
             auth=self.auth,
@@ -154,7 +157,7 @@ class PrometheusConnect:
         params = params or {}
         response = self._session.get(
             "{0}/api/v1/label/{1}/values".format(self.url, label_name),
-            verify=self.ssl_verification,
+            verify=self._session.verify,
             headers=self.headers,
             params=params,
             auth=self.auth,
@@ -206,7 +209,7 @@ class PrometheusConnect:
         response = self._session.get(
             "{0}/api/v1/query".format(self.url),
             params={**{"query": query}, **params},
-            verify=self.ssl_verification,
+            verify=self._session.verify,
             headers=self.headers,
             auth=self.auth,
             cert=self._session.cert
@@ -298,7 +301,7 @@ class PrometheusConnect:
                     },
                     **params,
                 },
-                verify=self.ssl_verification,
+                verify=self._session.verify,
                 headers=self.headers,
                 auth=self.auth,
                 cert=self._session.cert
@@ -397,7 +400,7 @@ class PrometheusConnect:
         response = self._session.get(
             "{0}/api/v1/query".format(self.url),
             params={**{"query": query}, **params},
-            verify=self.ssl_verification,
+            verify=self._session.verify,
             headers=self.headers,
             auth=self.auth,
             cert=self._session.cert
@@ -441,7 +444,7 @@ class PrometheusConnect:
         response = self._session.get(
             "{0}/api/v1/query_range".format(self.url),
             params={**{"query": query, "start": start, "end": end, "step": step}, **params},
-            verify=self.ssl_verification,
+            verify=self._session.verify,
             headers=self.headers,
             auth=self.auth,
             cert=self._session.cert
