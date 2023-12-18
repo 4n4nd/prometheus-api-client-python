@@ -71,7 +71,7 @@ class PrometheusConnect:
         self.auth = auth
 
         if session is not None:
-            self._session == session
+            self._session = session
         else:
             self._session = requests.Session()
             self._session.verify = not disable_ssl
