@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+from requests import Session
 
 from .exceptions import PrometheusApiClientException
 
@@ -36,8 +37,9 @@ class PrometheusConnect:
     :param retry: (Retry) Retry adapter to retry on HTTP errors
     :param auth: (optional) Auth tuple to enable Basic/Digest/Custom HTTP Auth. See python
         requests library auth parameter for further explanation.
-    :param proxy: (Optional) Proxies dictonary to enable connection through proxy. 
-        Example: {"http_proxy": "<ip_address/hostname:port>", "https_proxy": "<ip_address/hostname:port>"}  
+    :param proxy: (Optional) Proxies dictionary to enable connection through proxy.
+        Example: {"http_proxy": "<ip_address/hostname:port>", "https_proxy": "<ip_address/hostname:port>"}
+    :param session (Optional) Custom requests.Session to enable complex HTTP configuration
     """
 
     def __init__(
@@ -47,7 +49,8 @@ class PrometheusConnect:
         disable_ssl: bool = False,
         retry: Retry = None,
         auth: tuple = None,
-        proxy: dict = None
+        proxy: dict = None,
+        session: Session = None,
     ):
         """Functions as a Constructor for the class PrometheusConnect."""
         if url is None:
@@ -68,7 +71,8 @@ class PrometheusConnect:
 
         self.auth = auth
 
-        self._session = requests.Session()
+        self._session = session if session is not None else requests.Session()
+
         if proxy is not None:
             self._session.proxies = proxy
         self._session.mount(self.url, HTTPAdapter(max_retries=retry))
