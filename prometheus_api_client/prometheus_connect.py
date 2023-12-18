@@ -91,6 +91,7 @@ class PrometheusConnect:
             headers=self.headers,
             params=params,
             auth=self.auth,
+            cert=self._session.cert
         )
         return response.ok
 
@@ -127,6 +128,7 @@ class PrometheusConnect:
             headers=self.headers,
             params=params,
             auth=self.auth,
+            cert=self._session.cert
         )
 
         if response.status_code == 200:
@@ -156,6 +158,7 @@ class PrometheusConnect:
             headers=self.headers,
             params=params,
             auth=self.auth,
+            cert=self._session.cert
         )
 
         if response.status_code == 200:
@@ -206,6 +209,7 @@ class PrometheusConnect:
             verify=self.ssl_verification,
             headers=self.headers,
             auth=self.auth,
+            cert=self._session.cert
         )
 
         if response.status_code == 200:
@@ -297,6 +301,7 @@ class PrometheusConnect:
                 verify=self.ssl_verification,
                 headers=self.headers,
                 auth=self.auth,
+                cert=self._session.cert
             )
             if response.status_code == 200:
                 data += response.json()["data"]["result"]
@@ -395,6 +400,7 @@ class PrometheusConnect:
             verify=self.ssl_verification,
             headers=self.headers,
             auth=self.auth,
+            cert=self._session.cert
         )
         if response.status_code == 200:
             data = response.json()["data"]["result"]
@@ -438,6 +444,7 @@ class PrometheusConnect:
             verify=self.ssl_verification,
             headers=self.headers,
             auth=self.auth,
+            cert=self._session.cert
         )
         if response.status_code == 200:
             data = response.json()["data"]["result"]
