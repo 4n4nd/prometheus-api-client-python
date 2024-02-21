@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+from requests import Session
 
 from .exceptions import PrometheusApiClientException
 
@@ -36,8 +37,9 @@ class PrometheusConnect:
     :param retry: (Retry) Retry adapter to retry on HTTP errors
     :param auth: (optional) Auth tuple to enable Basic/Digest/Custom HTTP Auth. See python
         requests library auth parameter for further explanation.
-    :param proxy: (Optional) Proxies dictonary to enable connection through proxy. 
-        Example: {"http_proxy": "<ip_address/hostname:port>", "https_proxy": "<ip_address/hostname:port>"}  
+    :param proxy: (Optional) Proxies dictionary to enable connection through proxy.
+        Example: {"http_proxy": "<ip_address/hostname:port>", "https_proxy": "<ip_address/hostname:port>"}
+    :param session (Optional) Custom requests.Session to enable complex HTTP configuration
     """
 
     def __init__(
@@ -47,7 +49,8 @@ class PrometheusConnect:
         disable_ssl: bool = False,
         retry: Retry = None,
         auth: tuple = None,
-        proxy: dict = None
+        proxy: dict = None,
+        session: Session = None,
     ):
         """Functions as a Constructor for the class PrometheusConnect."""
         if url is None:
@@ -57,7 +60,6 @@ class PrometheusConnect:
         self.url = url
         self.prometheus_host = urlparse(self.url).netloc
         self._all_metrics = None
-        self.ssl_verification = not disable_ssl
 
         if retry is None:
             retry = Retry(
@@ -68,7 +70,12 @@ class PrometheusConnect:
 
         self.auth = auth
 
-        self._session = requests.Session()
+        if session is not None:
+            self._session = session
+        else:
+            self._session = requests.Session()
+            self._session.verify = not disable_ssl
+
         if proxy is not None:
             self._session.proxies = proxy
         self._session.mount(self.url, HTTPAdapter(max_retries=retry))
@@ -83,10 +90,11 @@ class PrometheusConnect:
         """
         response = self._session.get(
             "{0}/".format(self.url),
-            verify=self.ssl_verification,
+            verify=self._session.verify,
             headers=self.headers,
             params=params,
             auth=self.auth,
+            cert=self._session.cert
         )
         return response.ok
 
@@ -119,10 +127,11 @@ class PrometheusConnect:
         params = params or {}
         response = self._session.get(
             "{0}/api/v1/labels".format(self.url),
-            verify=self.ssl_verification,
+            verify=self._session.verify,
             headers=self.headers,
             params=params,
             auth=self.auth,
+            cert=self._session.cert
         )
 
         if response.status_code == 200:
@@ -148,10 +157,11 @@ class PrometheusConnect:
         params = params or {}
         response = self._session.get(
             "{0}/api/v1/label/{1}/values".format(self.url, label_name),
-            verify=self.ssl_verification,
+            verify=self._session.verify,
             headers=self.headers,
             params=params,
             auth=self.auth,
+            cert=self._session.cert
         )
 
         if response.status_code == 200:
@@ -199,9 +209,10 @@ class PrometheusConnect:
         response = self._session.get(
             "{0}/api/v1/query".format(self.url),
             params={**{"query": query}, **params},
-            verify=self.ssl_verification,
+            verify=self._session.verify,
             headers=self.headers,
             auth=self.auth,
+            cert=self._session.cert
         )
 
         if response.status_code == 200:
@@ -290,9 +301,10 @@ class PrometheusConnect:
                     },
                     **params,
                 },
-                verify=self.ssl_verification,
+                verify=self._session.verify,
                 headers=self.headers,
                 auth=self.auth,
+                cert=self._session.cert
             )
             if response.status_code == 200:
                 data += response.json()["data"]["result"]
@@ -388,9 +400,10 @@ class PrometheusConnect:
         response = self._session.get(
             "{0}/api/v1/query".format(self.url),
             params={**{"query": query}, **params},
-            verify=self.ssl_verification,
+            verify=self._session.verify,
             headers=self.headers,
             auth=self.auth,
+            cert=self._session.cert
         )
         if response.status_code == 200:
             data = response.json()["data"]["result"]
@@ -431,9 +444,10 @@ class PrometheusConnect:
         response = self._session.get(
             "{0}/api/v1/query_range".format(self.url),
             params={**{"query": query, "start": start, "end": end, "step": step}, **params},
-            verify=self.ssl_verification,
+            verify=self._session.verify,
             headers=self.headers,
             auth=self.auth,
+            cert=self._session.cert
         )
         if response.status_code == 200:
             data = response.json()["data"]["result"]
