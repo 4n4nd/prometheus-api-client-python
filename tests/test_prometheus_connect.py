@@ -17,7 +17,7 @@ class TestPrometheusConnect(unittest.TestCase):
     def setUp(self):
         """Set up connection settings for prometheus."""
         self.prometheus_host = os.getenv("PROM_URL")
-        self.pc = PrometheusConnect(url=self.prometheus_host, disable_ssl=True)
+        self.pc = PrometheusConnect(url=self.prometheus_host, disable_ssl=True, pool_size=2)
 
     def test_metrics_list(self):
         """Check if setup was done correctly."""
@@ -145,7 +145,7 @@ class TestPrometheusConnectWithMockedNetwork(BaseMockedNetworkTestcase):
     """Network is blocked in this testcase, see base class."""
 
     def setUp(self):  # noqa D102
-        self.pc = PrometheusConnect(url="http://doesnt_matter.xyz", disable_ssl=True)
+        self.pc = PrometheusConnect(url="http://doesnt_matter.xyz", disable_ssl=True, pool_size=2)
 
     def test_network_is_blocked(self):  # noqa D102
         resp = requests.get("https://google.com")
