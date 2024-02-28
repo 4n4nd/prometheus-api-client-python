@@ -396,6 +396,7 @@ class PrometheusConnect:
             at https://prometheus.io/docs/prometheus/latest/querying/examples/
         :param params: (dict) Optional dictionary containing GET parameters to be
             sent along with the API request, such as "time"
+        :param timeout: (int) A timeout (in seconds) applied to the request
         :returns: (list) A list of metric data received in response of the query sent
         :raises:
             (RequestException) Raises an exception in case of a connection error
@@ -404,6 +405,7 @@ class PrometheusConnect:
         params = params or {}
         data = None
         query = str(query)
+        timeout = self._timeout if timeout is None else timeout
         # using the query API to get raw data
         response = self._session.get(
             "{0}/api/v1/query".format(self.url),
@@ -412,7 +414,7 @@ class PrometheusConnect:
             headers=self.headers,
             auth=self.auth,
             cert=self._session.cert,
-            timeout=self._timeout,
+            timeout=timeout,
         )
         if response.status_code == 200:
             data = response.json()["data"]["result"]
@@ -424,7 +426,7 @@ class PrometheusConnect:
         return data
 
     def custom_query_range(
-        self, query: str, start_time: datetime, end_time: datetime, step: str, params: dict = None
+        self, query: str, start_time: datetime, end_time: datetime, step: str, params: dict = None, timeout: int = None
     ):
         """
         Send a query_range to a Prometheus Host.
@@ -439,6 +441,7 @@ class PrometheusConnect:
         :param step: (str) Query resolution step width in duration format or float number of seconds
         :param params: (dict) Optional dictionary containing GET parameters to be
             sent along with the API request, such as "timeout"
+        :param timeout: (int) A timeout (in seconds) applied to the request
         :returns: (dict) A dict of metric data received in response of the query sent
         :raises:
             (RequestException) Raises an exception in case of a connection error
@@ -449,6 +452,7 @@ class PrometheusConnect:
         params = params or {}
         data = None
         query = str(query)
+        timeout = self._timeout if timeout is None else timeout
         # using the query_range API to get raw data
         response = self._session.get(
             "{0}/api/v1/query_range".format(self.url),
@@ -457,7 +461,7 @@ class PrometheusConnect:
             headers=self.headers,
             auth=self.auth,
             cert=self._session.cert,
-            timeout=self._timeout,
+            timeout=timeout,
         )
         if response.status_code == 200:
             data = response.json()["data"]["result"]
