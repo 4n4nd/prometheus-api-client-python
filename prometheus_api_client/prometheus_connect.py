@@ -40,7 +40,7 @@ class PrometheusConnect:
     :param proxy: (Optional) Proxies dictionary to enable connection through proxy.
         Example: {"http_proxy": "<ip_address/hostname:port>", "https_proxy": "<ip_address/hostname:port>"}
     :param session (Optional) Custom requests.Session to enable complex HTTP configuration
-    :param timeout: (int) A timeout (in seconds) applied to all requests
+    :param timeout: (Optional) A timeout (in seconds) applied to all requests
     """
 
     def __init__(
@@ -396,7 +396,7 @@ class PrometheusConnect:
             at https://prometheus.io/docs/prometheus/latest/querying/examples/
         :param params: (dict) Optional dictionary containing GET parameters to be
             sent along with the API request, such as "time"
-        :param timeout: (int) A timeout (in seconds) applied to the request
+        :param timeout: (Optional) A timeout (in seconds) applied to the request
         :returns: (list) A list of metric data received in response of the query sent
         :raises:
             (RequestException) Raises an exception in case of a connection error
@@ -441,7 +441,7 @@ class PrometheusConnect:
         :param step: (str) Query resolution step width in duration format or float number of seconds
         :param params: (dict) Optional dictionary containing GET parameters to be
             sent along with the API request, such as "timeout"
-        :param timeout: (int) A timeout (in seconds) applied to the request
+        :param timeout: (Optional) A timeout (in seconds) applied to the request
         :returns: (dict) A dict of metric data received in response of the query sent
         :raises:
             (RequestException) Raises an exception in case of a connection error
