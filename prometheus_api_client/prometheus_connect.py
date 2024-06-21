@@ -40,6 +40,7 @@ class PrometheusConnect:
     :param proxy: (Optional) Proxies dictionary to enable connection through proxy.
         Example: {"http_proxy": "<ip_address/hostname:port>", "https_proxy": "<ip_address/hostname:port>"}
     :param session (Optional) Custom requests.Session to enable complex HTTP configuration
+    :param timeout: (Optional) A timeout (in seconds) applied to all requests
     """
 
     def __init__(
@@ -51,6 +52,7 @@ class PrometheusConnect:
         auth: tuple = None,
         proxy: dict = None,
         session: Session = None,
+        timeout: int = None,
     ):
         """Functions as a Constructor for the class PrometheusConnect."""
         if url is None:
@@ -60,6 +62,7 @@ class PrometheusConnect:
         self.url = url
         self.prometheus_host = urlparse(self.url).netloc
         self._all_metrics = None
+        self._timeout = timeout
 
         if retry is None:
             retry = Retry(
@@ -94,7 +97,8 @@ class PrometheusConnect:
             headers=self.headers,
             params=params,
             auth=self.auth,
-            cert=self._session.cert
+            cert=self._session.cert,
+            timeout=self._timeout,
         )
         return response.ok
 
@@ -131,7 +135,8 @@ class PrometheusConnect:
             headers=self.headers,
             params=params,
             auth=self.auth,
-            cert=self._session.cert
+            cert=self._session.cert,
+            timeout=self._timeout,
         )
 
         if response.status_code == 200:
@@ -161,7 +166,8 @@ class PrometheusConnect:
             headers=self.headers,
             params=params,
             auth=self.auth,
-            cert=self._session.cert
+            cert=self._session.cert,
+            timeout=self._timeout,
         )
 
         if response.status_code == 200:
@@ -212,7 +218,8 @@ class PrometheusConnect:
             verify=self._session.verify,
             headers=self.headers,
             auth=self.auth,
-            cert=self._session.cert
+            cert=self._session.cert,
+            timeout=self._timeout,
         )
 
         if response.status_code == 200:
@@ -304,7 +311,8 @@ class PrometheusConnect:
                 verify=self._session.verify,
                 headers=self.headers,
                 auth=self.auth,
-                cert=self._session.cert
+                cert=self._session.cert,
+                timeout=self._timeout,
             )
             if response.status_code == 200:
                 data += response.json()["data"]["result"]
@@ -377,7 +385,7 @@ class PrometheusConnect:
         )
         return object_path
 
-    def custom_query(self, query: str, params: dict = None):
+    def custom_query(self, query: str, params: dict = None, timeout: int = None):
         """
         Send a custom query to a Prometheus Host.
 
@@ -388,6 +396,7 @@ class PrometheusConnect:
             at https://prometheus.io/docs/prometheus/latest/querying/examples/
         :param params: (dict) Optional dictionary containing GET parameters to be
             sent along with the API request, such as "time"
+        :param timeout: (Optional) A timeout (in seconds) applied to the request
         :returns: (list) A list of metric data received in response of the query sent
         :raises:
             (RequestException) Raises an exception in case of a connection error
@@ -396,6 +405,7 @@ class PrometheusConnect:
         params = params or {}
         data = None
         query = str(query)
+        timeout = self._timeout if timeout is None else timeout
         # using the query API to get raw data
         response = self._session.get(
             "{0}/api/v1/query".format(self.url),
@@ -403,7 +413,8 @@ class PrometheusConnect:
             verify=self._session.verify,
             headers=self.headers,
             auth=self.auth,
-            cert=self._session.cert
+            cert=self._session.cert,
+            timeout=timeout,
         )
         if response.status_code == 200:
             data = response.json()["data"]["result"]
@@ -415,7 +426,7 @@ class PrometheusConnect:
         return data
 
     def custom_query_range(
-        self, query: str, start_time: datetime, end_time: datetime, step: str, params: dict = None
+        self, query: str, start_time: datetime, end_time: datetime, step: str, params: dict = None, timeout: int = None
     ):
         """
         Send a query_range to a Prometheus Host.
@@ -430,6 +441,7 @@ class PrometheusConnect:
         :param step: (str) Query resolution step width in duration format or float number of seconds
         :param params: (dict) Optional dictionary containing GET parameters to be
             sent along with the API request, such as "timeout"
+        :param timeout: (Optional) A timeout (in seconds) applied to the request
         :returns: (dict) A dict of metric data received in response of the query sent
         :raises:
             (RequestException) Raises an exception in case of a connection error
@@ -440,6 +452,7 @@ class PrometheusConnect:
         params = params or {}
         data = None
         query = str(query)
+        timeout = self._timeout if timeout is None else timeout
         # using the query_range API to get raw data
         response = self._session.get(
             "{0}/api/v1/query_range".format(self.url),
@@ -447,7 +460,8 @@ class PrometheusConnect:
             verify=self._session.verify,
             headers=self.headers,
             auth=self.auth,
-            cert=self._session.cert
+            cert=self._session.cert,
+            timeout=timeout,
         )
         if response.status_code == 200:
             data = response.json()["data"]["result"]
