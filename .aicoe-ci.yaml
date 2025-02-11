@@ -1,8 +1,0 @@
----
-check:
-  - thoth-pytest
-  - thoth-precommit
-pytest-env:
-  PROM_URL: "http://demo.robustperception.io:9090/"
-release:
-  - upload-pypi-sesheta
