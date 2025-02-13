@@ -1,6 +1,7 @@
 # prometheus-api-client
 
-[![PyPI version](https://badge.fury.io/py/prometheus-api-client.svg)](https://badge.fury.io/py/prometheus-api-client) [![PyPI download month](https://img.shields.io/pypi/dm/prometheus-api-client.svg)](https://pypi.python.org/pypi/prometheus-api-client/)
+[![PyPI version](https://badge.fury.io/py/prometheus-api-client.svg)](https://badge.fury.io/py/prometheus-api-client) [![PyPI download month](https://img.shields.io/pypi/dm/prometheus-api-client.svg)](https://pypi.python.org/pypi/prometheus-api-client/) ![Pepy Total Downloads](https://img.shields.io/pepy/dt/prometheus-api-client?label=total%20downloads)
+
 
 A Python wrapper for the Prometheus http api and some tools for metrics processing.
 
