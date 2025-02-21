@@ -1,9 +1,9 @@
-
 """A collection of tools to collect and manipulate prometheus metrics."""
 
 __title__ = "prometheus-connect"
 __version__ = "0.5.7"
 
+from .exceptions import PrometheusApiClientException, MetricValueConversionError
 def __getattr__(name):
     if name == "PrometheusConnect":
         from .prometheus_connect import PrometheusConnect
