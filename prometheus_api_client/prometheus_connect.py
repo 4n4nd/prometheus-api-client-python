@@ -561,3 +561,145 @@ class PrometheusConnect:
             else:
                 raise TypeError("Invalid operation: " + operation)
         return aggregated_values
+
+
+    def get_scrape_pools(self) -> list[str]:
+        """
+        Get a list of all scrape pools in activeTargets.
+        """
+        scrape_pools = []
+        for target in self.get_targets()['activeTargets']:
+            scrape_pools.append(target['scrapePool'])
+        return list(set(scrape_pools))
+
+    def get_targets(self, state: str = None, scrape_pool: str = None):
+        """
+        Get a list of all targets from Prometheus.
+
+        :param state: (str) Optional filter for target state ('active', 'dropped', 'any'). 
+                     If None, returns both active and dropped targets.
+        :param scrape_pool: (str) Optional filter by scrape pool name
+        :returns: (dict) A dictionary containing active and dropped targets
+        :raises:
+            (RequestException) Raises an exception in case of a connection error
+            (PrometheusApiClientException) Raises in case of non 200 response status code
+        """
+        params = {}
+        if state:
+            params['state'] = state
+        if scrape_pool:
+            params['scrapePool'] = scrape_pool
+
+        response = self._session.get(
+            "{0}/api/v1/targets".format(self.url),
+            verify=self._session.verify,
+            headers=self.headers,
+            params=params,
+            auth=self.auth,
+            cert=self._session.cert,
+            timeout=self._timeout,
+        )
+
+        if response.status_code == 200:
+            return response.json()["data"]
+        else:
+            raise PrometheusApiClientException(
+                "HTTP Status Code {} ({!r})".format(
+                    response.status_code, response.content)
+            )
+
+    def get_target_metadata(self, target: dict[str, str], metric: str = None, limit: int = None):
+        """
+        Get metadata about metrics from a specific target.
+
+        :param target: (dict) A dictionary containing target labels to match against (e.g. {'job': 'prometheus'})
+        :param metric: (str) Optional metric name to filter metadata
+        :param limit: (int) Optional maximum number of targets to match
+        :returns: (list) A list of metadata entries for matching targets
+        :raises:
+            (RequestException) Raises an exception in case of a connection error
+            (PrometheusApiClientException) Raises in case of non 200 response status code
+        """
+        params = {}
+
+        # Convert target dict to label selector string
+        if metric:
+            params['metric'] = metric
+
+        if target:
+            match_target = "{" + \
+                ",".join(f'{k}="{v}"' for k, v in target.items()) + "}"
+            params['match_target'] = match_target
+
+        if limit:
+            params['limit'] = limit
+
+        response = self._session.get(
+            "{0}/api/v1/targets/metadata".format(self.url),
+            verify=self._session.verify,
+            headers=self.headers,
+            params=params,
+            auth=self.auth,
+            cert=self._session.cert,
+            timeout=self._timeout,
+        )
+
+        if response.status_code == 200:
+            return response.json()["data"]
+        else:
+            raise PrometheusApiClientException(
+                "HTTP Status Code {} ({!r})".format(
+                    response.status_code, response.content)
+            )
+
+    def get_metric_metadata(self, metric: str, limit: int = None, limit_per_metric: int = None):
+        """
+        Get metadata about metrics.
+
+        :param metric: (str) Optional metric name to filter metadata
+        :param limit: (int) Optional maximum number of metrics to return
+        :param limit_per_metric: (int) Optional maximum number of metadata entries per metric
+        :returns: (dict) A dictionary mapping metric names to lists of metadata entries in format:
+                 {'metric_name': [{'type': str, 'help': str, 'unit': str}, ...]}
+        :raises:
+            (RequestException) Raises an exception in case of a connection error
+            (PrometheusApiClientException) Raises in case of non 200 response status code
+        """
+        params = {}
+
+        if metric:
+            params['metric'] = metric
+
+        if limit:
+            params['limit'] = limit
+
+        if limit_per_metric:
+            params['limit_per_metric'] = limit_per_metric
+
+        response = self._session.get(
+            "{0}/api/v1/metadata".format(self.url),
+            verify=self._session.verify,
+            headers=self.headers,
+            params=params,
+            auth=self.auth,
+            cert=self._session.cert,
+            timeout=self._timeout,
+        )
+
+        if response.status_code == 200:
+            data = response.json()["data"]
+            formatted_data = []
+            for k, v in data.items():
+                for v_ in v:
+                    formatted_data.append({
+                        "metric_name": k,
+                        "type": v_.get('type', 'unknown'),
+                        "help": v_.get('help', ''),
+                        "unit": v_.get('unit', '')
+                    })
+            return formatted_data
+        else:
+            raise PrometheusApiClientException(
+                "HTTP Status Code {} ({!r})".format(
+                    response.status_code, response.content)
+            )
