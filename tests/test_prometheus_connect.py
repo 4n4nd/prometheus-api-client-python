@@ -17,7 +17,7 @@ class TestPrometheusConnect(unittest.TestCase):
     def setUp(self):
         """Set up connection settings for prometheus."""
         self.prometheus_host = os.getenv("PROM_URL")
-        self.pc = PrometheusConnect(url=self.prometheus_host, disable_ssl=True)
+        self.pc = PrometheusConnect(url=self.prometheus_host, disable_ssl=False)
 
     def test_metrics_list(self):
         """Check if setup was done correctly."""
@@ -130,15 +130,15 @@ class TestPrometheusConnect(unittest.TestCase):
 
     def test_retry_on_error(self):  # noqa D102
         retry = Retry(total=3, backoff_factor=0.1, status_forcelist=[400])
-        pc = PrometheusConnect(url=self.prometheus_host, disable_ssl=True, retry=retry)
+        pc = PrometheusConnect(url=self.prometheus_host, disable_ssl=False, retry=retry)
 
         with self.assertRaises(requests.exceptions.RetryError, msg="too many 400 error responses"):
             pc.custom_query("BOOM.BOOM!#$%")
 
     def test_get_label_names_method(self):  # noqa D102
         labels = self.pc.get_label_names(params={"match[]": "up"})
-        self.assertEqual(len(labels), 4)
-        self.assertEqual(labels, ["__name__", "env", "instance", "job"])
+        self.assertEqual(len(labels), 3)
+        self.assertEqual(labels, ["__name__", "instance", "job"])
 
 
 class TestPrometheusConnectWithMockedNetwork(BaseMockedNetworkTestcase):
