@@ -608,13 +608,12 @@ class PrometheusConnect:
                     response.status_code, response.content)
             )
 
-    def get_target_metadata(self, target: dict[str, str], metric: str = None, limit: int = None):
+    def get_target_metadata(self, target: dict[str, str], metric: str = None):
         """
         Get metadata about metrics from a specific target.
 
         :param target: (dict) A dictionary containing target labels to match against (e.g. {'job': 'prometheus'})
         :param metric: (str) Optional metric name to filter metadata
-        :param limit: (int) Optional maximum number of targets to match
         :returns: (list) A list of metadata entries for matching targets
         :raises:
             (RequestException) Raises an exception in case of a connection error
@@ -630,9 +629,6 @@ class PrometheusConnect:
             match_target = "{" + \
                 ",".join(f'{k}="{v}"' for k, v in target.items()) + "}"
             params['match_target'] = match_target
-
-        if limit:
-            params['limit'] = limit
 
         response = self._session.get(
             "{0}/api/v1/targets/metadata".format(self.url),
