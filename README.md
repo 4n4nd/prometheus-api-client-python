@@ -201,7 +201,7 @@ For more functions included in the `prometheus-api-client` library, please refer
 
 ## Running tests
 
-`PROM_URL="http://demo.robustperception.io:9090/" pytest`
+`PROM_URL="https://demo.promlabs.com/" pytest`
 
 ## Code Styling and Linting
 
