@@ -127,7 +127,6 @@ class TestPrometheusConnect(unittest.TestCase):
     def test_get_metric_aggregation_with_incorrect_input_types(self):  # noqa D102
         with self.assertRaises(TypeError, msg="operations accepted invalid value type"):
             _ = self.pc.get_metric_aggregation(query="up", operations="sum")
-
     def test_retry_on_error(self):  # noqa D102
         retry = Retry(total=3, backoff_factor=0.1, status_forcelist=[400])
         pc = PrometheusConnect(url=self.prometheus_host, disable_ssl=False, retry=retry)
@@ -139,6 +138,75 @@ class TestPrometheusConnect(unittest.TestCase):
         labels = self.pc.get_label_names(params={"match[]": "up"})
         self.assertEqual(len(labels), 3)
         self.assertEqual(labels, ["__name__", "instance", "job"])
+
+    def test_get_scrape_pools(self):  # noqa D102
+        scrape_pools = self.pc.get_scrape_pools()
+        self.assertIsInstance(scrape_pools, list)
+        self.assertTrue(len(scrape_pools) > 0, "no scrape pools found")
+        self.assertIsInstance(scrape_pools[0], str)
+
+    def test_get_targets(self):   # PR #295
+        targets = self.pc.get_targets()
+        self.assertIsInstance(targets, dict)
+        self.assertIn('activeTargets', targets)
+        self.assertIsInstance(targets['activeTargets'], list)
+
+        # Test with state filter
+        active_targets = self.pc.get_targets(state='active')
+        self.assertIsInstance(active_targets, dict)
+        self.assertIn('activeTargets', active_targets)
+
+        # Test with scrape_pool filter
+        if len(scrape_pools := self.pc.get_scrape_pools()) > 0:
+            pool_targets = self.pc.get_targets(scrape_pool=scrape_pools[0])
+            self.assertIsInstance(pool_targets, dict)
+
+    def test_get_target_metadata(self):   # PR #295
+        # Get a target to test with
+        targets = self.pc.get_targets()
+        if len(targets['activeTargets']) > 0:
+            target = {
+                'job': targets['activeTargets'][0]['labels']['job']
+            }
+            metadata = self.pc.get_target_metadata(target)
+            self.assertIsInstance(metadata, list)
+
+            # Test with metric filter
+            if len(metadata) > 0:
+                metric_name = metadata[0]['metric']
+                filtered_metadata = self.pc.get_target_metadata(
+                    target, metric=metric_name)
+                self.assertIsInstance(filtered_metadata, list)
+                self.assertTrue(
+                    all(item['target']['job'] == target['job'] for item in filtered_metadata))
+
+
+    def test_get_metric_metadata(self):  # PR #295
+        metadata = self.pc.get_metric_metadata(metric=None)
+        self.assertIsInstance(metadata, list)
+        self.assertTrue(len(metadata) > 0, "no metric metadata found")
+
+        # Check structure of metadata
+        self.assertIn('metric_name', metadata[0])
+        self.assertIn('type', metadata[0])
+        self.assertIn('help', metadata[0])
+        self.assertIn('unit', metadata[0])
+
+        # Test with specific metric
+        if len(metadata) > 0:
+            metric_name = metadata[0]['metric_name']
+            filtered_metadata = self.pc.get_metric_metadata(metric=metric_name)
+            self.assertIsInstance(filtered_metadata, list)
+            self.assertTrue(
+                all(item['metric_name'] == metric_name for item in filtered_metadata))
+
+        # Test with limit
+        limited_metadata = self.pc.get_metric_metadata(metric_name, limit=1)
+        self.assertLessEqual(len(limited_metadata), 1)
+
+        # Test with limit_per_metric
+        limited_per_metric = self.pc.get_metric_metadata(metric_name, limit_per_metric=1)
+        self.assertIsInstance(limited_per_metric, list)
 
 
 class TestPrometheusConnectWithMockedNetwork(BaseMockedNetworkTestcase):
@@ -233,3 +301,6 @@ class TestPrometheusConnectWithMockedNetwork(BaseMockedNetworkTestcase):
             self.assertEqual(handler.call_count, 1)
             request = handler.requests[0]
             self.assertEqual(request.path_url, "/api/v1/label/label_name/values")
+
+if __name__ == "__main__":
+    unittest.main()
