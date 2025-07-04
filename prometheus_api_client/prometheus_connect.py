@@ -41,7 +41,8 @@ class PrometheusConnect:
         Example: {"http_proxy": "<ip_address/hostname:port>", "https_proxy": "<ip_address/hostname:port>"}
     :param session (Optional) Custom requests.Session to enable complex HTTP configuration
     :param timeout: (Optional) A timeout (in seconds) applied to all requests
-    :param method: (Optional) HTTP Method (GET or POST) to use for Query APIs that allow POST (/query, /query_range and /labels)
+    :param method: (Optional) (str) HTTP Method (GET or POST) to use for Query APIs that allow POST 
+        (/query, /query_range and /labels). Use POST for large and complex queries. Default is GET.
     """
 
     def __init__(
