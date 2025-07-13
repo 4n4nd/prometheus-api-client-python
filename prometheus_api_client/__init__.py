@@ -1,6 +1,6 @@
 """A collection of tools to collect and manipulate prometheus metrics."""
 
-__title__ = "prometheus-connect"
+__title__ = "prometheus-api-client-optional-matplotlib"
 __version__ = "0.6.0"
 
 from .prometheus_connect import *  # noqa F403

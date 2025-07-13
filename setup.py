@@ -27,11 +27,11 @@ def get_version():
 
 VERSION = get_version()
 setuptools.setup(
-    name="prometheus-api-client",
+    name="prometheus-api-client-optional-matplotlib",
     version=VERSION,
     author="Anand Sanmukhani",
     author_email="asanmukhani@microsoft.com",
-    description="A small python api to collect data from prometheus",
+    description="A Python API client for Prometheus with optional matplotlib dependency",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/4n4nd/prometheus-api-client-python",

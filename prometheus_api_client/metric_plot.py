@@ -22,7 +22,10 @@ class MetricPlot:
 
             register_matplotlib_converters()
         except ImportError as exce:  # noqa F841
-            raise ImportError("matplotlib was not found")
+            raise ImportError(
+                "matplotlib is required for plotting functionality. "
+                "Install with: pip install 'prometheus-api-client[plotting]'"
+            )
 
         # One graph with potentially N lines - if plot() is called twice
         self._plt = plt
