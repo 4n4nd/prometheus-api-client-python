@@ -395,5 +395,66 @@ class TestPrometheusConnectWithMockedNetwork(BaseMockedNetworkTestcase):
             request = handler.requests[0]
             self.assertEqual(request.path_url, "/api/v1/label/label_name/values")
 
+    def test_get_metric_aggregation_with_nan_values(self):  # noqa D102
+        """Test that aggregation functions handle NaN values correctly."""
+        # Mock response with NaN values in the data
+        query_response_with_nan = {
+            "status": "success",
+            "data": {
+                "result": [
+                    {
+                        "metric": {"__name__": "test_metric"},
+                        "value": [1638360000, "1.0"]
+                    },
+                    {
+                        "metric": {"__name__": "test_metric"},
+                        "value": [1638360015, "NaN"]
+                    },
+                    {
+                        "metric": {"__name__": "test_metric"},
+                        "value": [1638360030, "2.0"]
+                    },
+                    {
+                        "metric": {"__name__": "test_metric"},
+                        "value": [1638360045, "3.0"]
+                    }
+                ]
+            }
+        }
+
+        operations = ["sum", "max", "min", "variance", "percentile_50", "deviation", "average"]
+        
+        with self.mock_response(query_response_with_nan) as handler:
+            aggregated_values = self.pc.get_metric_aggregation(
+                query="test_metric", operations=operations
+            )
+            
+            # With NaN-handling functions, we should get valid results
+            # sum should be 6.0 (1 + 2 + 3, ignoring NaN)
+            self.assertIsNotNone(aggregated_values)
+            self.assertIn("sum", aggregated_values)
+            self.assertIn("max", aggregated_values)
+            self.assertIn("min", aggregated_values)
+            self.assertIn("average", aggregated_values)
+            self.assertIn("variance", aggregated_values)
+            self.assertIn("deviation", aggregated_values)
+            self.assertIn("percentile_50.0", aggregated_values)
+            
+            # Verify that results are not NaN
+            import math
+            self.assertFalse(math.isnan(aggregated_values["sum"]), "Sum should not be NaN")
+            self.assertFalse(math.isnan(aggregated_values["max"]), "Max should not be NaN")
+            self.assertFalse(math.isnan(aggregated_values["min"]), "Min should not be NaN")
+            self.assertFalse(math.isnan(aggregated_values["average"]), "Average should not be NaN")
+            self.assertFalse(math.isnan(aggregated_values["variance"]), "Variance should not be NaN")
+            self.assertFalse(math.isnan(aggregated_values["deviation"]), "Deviation should not be NaN")
+            self.assertFalse(math.isnan(aggregated_values["percentile_50.0"]), "Percentile should not be NaN")
+            
+            # Verify expected values (approximately)
+            self.assertAlmostEqual(aggregated_values["sum"], 6.0, places=5)
+            self.assertAlmostEqual(aggregated_values["max"], 3.0, places=5)
+            self.assertAlmostEqual(aggregated_values["min"], 1.0, places=5)
+            self.assertAlmostEqual(aggregated_values["average"], 2.0, places=5)
+
 if __name__ == "__main__":
     unittest.main()

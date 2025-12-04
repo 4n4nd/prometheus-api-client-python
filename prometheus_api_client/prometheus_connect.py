@@ -597,22 +597,22 @@ class PrometheusConnect:
         np_array = numpy.array(query_values)
         for operation in operations:
             if operation == "sum":
-                aggregated_values["sum"] = numpy.sum(np_array)
+                aggregated_values["sum"] = numpy.nansum(np_array)
             elif operation == "max":
-                aggregated_values["max"] = numpy.max(np_array)
+                aggregated_values["max"] = numpy.nanmax(np_array)
             elif operation == "min":
-                aggregated_values["min"] = numpy.min(np_array)
+                aggregated_values["min"] = numpy.nanmin(np_array)
             elif operation == "average":
-                aggregated_values["average"] = numpy.average(np_array)
+                aggregated_values["average"] = numpy.nanmean(np_array)
             elif operation.startswith("percentile"):
                 percentile = float(operation.split("_")[1])
-                aggregated_values["percentile_" + str(percentile)] = numpy.percentile(
+                aggregated_values["percentile_" + str(percentile)] = numpy.nanpercentile(
                     query_values, percentile
                 )
             elif operation == "deviation":
-                aggregated_values["deviation"] = numpy.std(np_array)
+                aggregated_values["deviation"] = numpy.nanstd(np_array)
             elif operation == "variance":
-                aggregated_values["variance"] = numpy.var(np_array)
+                aggregated_values["variance"] = numpy.nanvar(np_array)
             else:
                 raise TypeError("Invalid operation: " + operation)
         return aggregated_values
