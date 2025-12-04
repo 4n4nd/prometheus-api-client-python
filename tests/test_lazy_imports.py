@@ -31,9 +31,9 @@ class TestLazyImports(unittest.TestCase):
         
         # Check that pandas, matplotlib, and numpy are not loaded
         loaded_modules = sys.modules.keys()
-        pandas_loaded = any('pandas' in m for m in loaded_modules)
-        matplotlib_loaded = any('matplotlib' in m for m in loaded_modules)
-        numpy_loaded = any('numpy' in m for m in loaded_modules)
+        pandas_loaded = any(m == 'pandas' or m.startswith('pandas.') for m in loaded_modules)
+        matplotlib_loaded = any(m == 'matplotlib' or m.startswith('matplotlib.') for m in loaded_modules)
+        numpy_loaded = any(m == 'numpy' or m.startswith('numpy.') for m in loaded_modules)
         
         self.assertFalse(pandas_loaded, "pandas should not be loaded when importing PrometheusConnect")
         self.assertFalse(matplotlib_loaded, "matplotlib should not be loaded when importing PrometheusConnect")
@@ -63,7 +63,7 @@ class TestLazyImports(unittest.TestCase):
         
         # Check that numpy is still not loaded after instantiation
         loaded_modules = sys.modules.keys()
-        numpy_loaded = any('numpy' in m for m in loaded_modules)
+        numpy_loaded = any(m == 'numpy' or m.startswith('numpy.') for m in loaded_modules)
         
         self.assertFalse(numpy_loaded, "numpy should not be loaded when instantiating PrometheusConnect")
         self.assertIsNotNone(pc, "PrometheusConnect should be instantiated successfully")
@@ -91,7 +91,7 @@ class TestLazyImports(unittest.TestCase):
         
         # Check that pandas is loaded (this is expected for Metric)
         loaded_modules = sys.modules.keys()
-        pandas_loaded = any('pandas' in m for m in loaded_modules)
+        pandas_loaded = any(m == 'pandas' or m.startswith('pandas.') for m in loaded_modules)
         
         self.assertTrue(pandas_loaded, "pandas should be loaded when importing Metric")
 
