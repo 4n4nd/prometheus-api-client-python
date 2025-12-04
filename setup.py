@@ -37,9 +37,10 @@ setuptools.setup(
     url="https://github.com/4n4nd/prometheus-api-client-python",
     install_requires=get_install_requires(),
     extras_require={
+        "dataframe": ["pandas>=1.4.0"],
         "numpy": ["numpy"],
         "plot": ["matplotlib"],
-        "all": ["numpy", "matplotlib"],
+        "all": ["pandas>=1.4.0", "numpy", "matplotlib"],
     },
     packages=setuptools.find_packages(),
     package_data={"prometheus-api-client": ["py.typed"]},
