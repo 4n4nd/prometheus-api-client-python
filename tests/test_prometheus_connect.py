@@ -1,4 +1,5 @@
 """Test module for class PrometheusConnect."""
+
 import unittest
 import os
 from datetime import datetime, timedelta
@@ -127,6 +128,7 @@ class TestPrometheusConnect(unittest.TestCase):
     def test_get_metric_aggregation_with_incorrect_input_types(self):  # noqa D102
         with self.assertRaises(TypeError, msg="operations accepted invalid value type"):
             _ = self.pc.get_metric_aggregation(query="up", operations="sum")
+
     def test_retry_on_error(self):  # noqa D102
         retry = Retry(total=3, backoff_factor=0.1, status_forcelist=[400])
         pc = PrometheusConnect(url=self.prometheus_host, disable_ssl=False, retry=retry)
@@ -156,41 +158,38 @@ class TestPrometheusConnect(unittest.TestCase):
         self.assertTrue(len(scrape_pools) > 0, "no scrape pools found")
         self.assertIsInstance(scrape_pools[0], str)
 
-    def test_get_targets(self):   # PR #295
+    def test_get_targets(self):  # PR #295
         targets = self.pc.get_targets()
         self.assertIsInstance(targets, dict)
-        self.assertIn('activeTargets', targets)
-        self.assertIsInstance(targets['activeTargets'], list)
+        self.assertIn("activeTargets", targets)
+        self.assertIsInstance(targets["activeTargets"], list)
 
         # Test with state filter
-        active_targets = self.pc.get_targets(state='active')
+        active_targets = self.pc.get_targets(state="active")
         self.assertIsInstance(active_targets, dict)
-        self.assertIn('activeTargets', active_targets)
+        self.assertIn("activeTargets", active_targets)
 
         # Test with scrape_pool filter
         if len(scrape_pools := self.pc.get_scrape_pools()) > 0:
             pool_targets = self.pc.get_targets(scrape_pool=scrape_pools[0])
             self.assertIsInstance(pool_targets, dict)
 
-    def test_get_target_metadata(self):   # PR #295
+    def test_get_target_metadata(self):  # PR #295
         # Get a target to test with
         targets = self.pc.get_targets()
-        if len(targets['activeTargets']) > 0:
-            target = {
-                'job': targets['activeTargets'][0]['labels']['job']
-            }
+        if len(targets["activeTargets"]) > 0:
+            target = {"job": targets["activeTargets"][0]["labels"]["job"]}
             metadata = self.pc.get_target_metadata(target)
             self.assertIsInstance(metadata, list)
 
             # Test with metric filter
             if len(metadata) > 0:
-                metric_name = metadata[0]['metric']
-                filtered_metadata = self.pc.get_target_metadata(
-                    target, metric=metric_name)
+                metric_name = metadata[0]["metric"]
+                filtered_metadata = self.pc.get_target_metadata(target, metric=metric_name)
                 self.assertIsInstance(filtered_metadata, list)
                 self.assertTrue(
-                    all(item['target']['job'] == target['job'] for item in filtered_metadata))
-
+                    all(item["target"]["job"] == target["job"] for item in filtered_metadata)
+                )
 
     def test_get_metric_metadata(self):  # PR #295
         metadata = self.pc.get_metric_metadata(metric=None)
@@ -198,18 +197,17 @@ class TestPrometheusConnect(unittest.TestCase):
         self.assertTrue(len(metadata) > 0, "no metric metadata found")
 
         # Check structure of metadata
-        self.assertIn('metric_name', metadata[0])
-        self.assertIn('type', metadata[0])
-        self.assertIn('help', metadata[0])
-        self.assertIn('unit', metadata[0])
+        self.assertIn("metric_name", metadata[0])
+        self.assertIn("type", metadata[0])
+        self.assertIn("help", metadata[0])
+        self.assertIn("unit", metadata[0])
 
         # Test with specific metric
         if len(metadata) > 0:
-            metric_name = metadata[0]['metric_name']
+            metric_name = metadata[0]["metric_name"]
             filtered_metadata = self.pc.get_metric_metadata(metric=metric_name)
             self.assertIsInstance(filtered_metadata, list)
-            self.assertTrue(
-                all(item['metric_name'] == metric_name for item in filtered_metadata))
+            self.assertTrue(all(item["metric_name"] == metric_name for item in filtered_metadata))
 
         # Test with limit
         limited_metadata = self.pc.get_metric_metadata(metric_name, limit=1)
@@ -236,7 +234,7 @@ class TestPrometheusConnect(unittest.TestCase):
         # Invalid value
         with self.assertRaises(ValueError):
             PrometheusConnect(url=self.prometheus_host, disable_ssl=False, method="PUT")
-            
+
     def test_post_method_for_supported_functions(self):
         """Test that PrometheusConnect uses POST for supported endpoints when method='POST', and returns a value."""
         pc = PrometheusConnect(url=self.prometheus_host, disable_ssl=False, method="POST")
@@ -246,35 +244,47 @@ class TestPrometheusConnect(unittest.TestCase):
         # custom_query should use POST and return something (or raise)
         try:
             result = pc.custom_query("up")
-            self.assertTrue(result is not None and result != [], "no metrics received from prometheus")
+            self.assertTrue(
+                result is not None and result != [], "no metrics received from prometheus"
+            )
         except Exception as e:
             self.fail(f"custom_query('up') raised an unexpected exception: {e}")
 
         # custom_query_range should use POST and return something (or raise)
         try:
-            result = pc.custom_query_range("up", start_time=start_time, end_time=end_time, step="15")
-            self.assertTrue(result is not None and result != [], "no metrics received from prometheus")
+            result = pc.custom_query_range(
+                "up", start_time=start_time, end_time=end_time, step="15"
+            )
+            self.assertTrue(
+                result is not None and result != [], "no metrics received from prometheus"
+            )
         except Exception as e:
             self.fail(f"custom_query_range('up', ...) raised an unexpected exception: {e}")
 
         # get_label_names should use POST and return something (or raise)
         try:
             result = pc.get_label_names()
-            self.assertTrue(result is not None and result != [], "no metrics received from prometheus")
+            self.assertTrue(
+                result is not None and result != [], "no metrics received from prometheus"
+            )
         except Exception as e:
             self.fail(f"get_label_names() raised an unexpected exception: {e}")
 
         # get_current_metric_value should use POST and return something (or raise)
         try:
             result = pc.get_current_metric_value("up")
-            self.assertTrue(result is not None and result != [], "no metrics received from prometheus")
+            self.assertTrue(
+                result is not None and result != [], "no metrics received from prometheus"
+            )
         except Exception as e:
             self.fail(f"get_current_metric_value('up') raised an unexpected exception: {e}")
 
         # get_metric_range_data should use POST and return something (or raise)
         try:
             result = pc.get_metric_range_data("up", start_time=start_time, end_time=end_time)
-            self.assertTrue(result is not None and result != [], "no metrics received from prometheus")
+            self.assertTrue(
+                result is not None and result != [], "no metrics received from prometheus"
+            )
         except Exception as e:
             self.fail(f"get_metric_range_data('up', ...) raised an unexpected exception: {e}")
 
@@ -358,12 +368,14 @@ class TestPrometheusConnectWithMockedNetwork(BaseMockedNetworkTestcase):
             request = handler.requests[0]
             self.assertEqual(request.path_url, "/api/v1/label/__name__/values")
 
-
     def test_get_series_method(self):  # noqa D102
-        series_payload = {"status": "success", "data": [
-            {"__name__": "up", "job": "prometheus", "instance": "localhost:9090"},
-            {"__name__": "up", "job": "node", "instance": "localhost:9100"}
-        ]}
+        series_payload = {
+            "status": "success",
+            "data": [
+                {"__name__": "up", "job": "prometheus", "instance": "localhost:9090"},
+                {"__name__": "up", "job": "node", "instance": "localhost:9100"},
+            ],
+        }
 
         with self.mock_response(series_payload) as handler:
             start_time = datetime.now() - timedelta(hours=1)
@@ -402,33 +414,21 @@ class TestPrometheusConnectWithMockedNetwork(BaseMockedNetworkTestcase):
             "status": "success",
             "data": {
                 "result": [
-                    {
-                        "metric": {"__name__": "test_metric"},
-                        "value": [1638360000, "1.0"]
-                    },
-                    {
-                        "metric": {"__name__": "test_metric"},
-                        "value": [1638360015, "NaN"]
-                    },
-                    {
-                        "metric": {"__name__": "test_metric"},
-                        "value": [1638360030, "2.0"]
-                    },
-                    {
-                        "metric": {"__name__": "test_metric"},
-                        "value": [1638360045, "3.0"]
-                    }
+                    {"metric": {"__name__": "test_metric"}, "value": [1638360000, "1.0"]},
+                    {"metric": {"__name__": "test_metric"}, "value": [1638360015, "NaN"]},
+                    {"metric": {"__name__": "test_metric"}, "value": [1638360030, "2.0"]},
+                    {"metric": {"__name__": "test_metric"}, "value": [1638360045, "3.0"]},
                 ]
-            }
+            },
         }
 
         operations = ["sum", "max", "min", "variance", "percentile_50", "deviation", "average"]
-        
-        with self.mock_response(query_response_with_nan) as handler:
+
+        with self.mock_response(query_response_with_nan):
             aggregated_values = self.pc.get_metric_aggregation(
                 query="test_metric", operations=operations
             )
-            
+
             # With NaN-handling functions, we should get valid results
             # sum should be 6.0 (1 + 2 + 3, ignoring NaN)
             self.assertIsNotNone(aggregated_values)
@@ -439,22 +439,30 @@ class TestPrometheusConnectWithMockedNetwork(BaseMockedNetworkTestcase):
             self.assertIn("variance", aggregated_values)
             self.assertIn("deviation", aggregated_values)
             self.assertIn("percentile_50.0", aggregated_values)
-            
+
             # Verify that results are not NaN
             import math
+
             self.assertFalse(math.isnan(aggregated_values["sum"]), "Sum should not be NaN")
             self.assertFalse(math.isnan(aggregated_values["max"]), "Max should not be NaN")
             self.assertFalse(math.isnan(aggregated_values["min"]), "Min should not be NaN")
             self.assertFalse(math.isnan(aggregated_values["average"]), "Average should not be NaN")
-            self.assertFalse(math.isnan(aggregated_values["variance"]), "Variance should not be NaN")
-            self.assertFalse(math.isnan(aggregated_values["deviation"]), "Deviation should not be NaN")
-            self.assertFalse(math.isnan(aggregated_values["percentile_50.0"]), "Percentile should not be NaN")
-            
+            self.assertFalse(
+                math.isnan(aggregated_values["variance"]), "Variance should not be NaN"
+            )
+            self.assertFalse(
+                math.isnan(aggregated_values["deviation"]), "Deviation should not be NaN"
+            )
+            self.assertFalse(
+                math.isnan(aggregated_values["percentile_50.0"]), "Percentile should not be NaN"
+            )
+
             # Verify expected values (approximately)
             self.assertAlmostEqual(aggregated_values["sum"], 6.0, places=5)
             self.assertAlmostEqual(aggregated_values["max"], 3.0, places=5)
             self.assertAlmostEqual(aggregated_values["min"], 1.0, places=5)
             self.assertAlmostEqual(aggregated_values["average"], 2.0, places=5)
+
 
 if __name__ == "__main__":
     unittest.main()
