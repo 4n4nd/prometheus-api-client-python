@@ -15,7 +15,7 @@ To install with all optional dependencies (pandas, numpy, matplotlib):
 
 `pip install prometheus-api-client[all]`
 
-**Note:** Starting from version 0.6.0, pandas, numpy, and matplotlib are optional dependencies. 
+**Note:** Starting from version 0.7.0, pandas, numpy, and matplotlib are optional dependencies. 
 If you only need `PrometheusConnect` without DataFrame support or plotting capabilities, you can install the minimal version which significantly reduces memory footprint and installation time, especially on Alpine-based Docker images.
 
 To install only specific extras:
