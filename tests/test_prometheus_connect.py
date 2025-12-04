@@ -219,6 +219,65 @@ class TestPrometheusConnect(unittest.TestCase):
         limited_per_metric = self.pc.get_metric_metadata(metric_name, limit_per_metric=1)
         self.assertIsInstance(limited_per_metric, list)
 
+    def test_method_argument_accepts_get_and_post(self):
+        """Test that PrometheusConnect accepts GET and POST for method argument, and raises on invalid values."""
+        # Default should be GET
+        pc_default = PrometheusConnect(url=self.prometheus_host, disable_ssl=False)
+        self.assertEqual(pc_default._method, "GET")
+        # Explicit GET
+        pc_get = PrometheusConnect(url=self.prometheus_host, disable_ssl=False, method="GET")
+        self.assertEqual(pc_get._method, "GET")
+        # Explicit POST
+        pc_post = PrometheusConnect(url=self.prometheus_host, disable_ssl=False, method="POST")
+        self.assertEqual(pc_post._method, "POST")
+        # Invalid type
+        with self.assertRaises(TypeError):
+            PrometheusConnect(url=self.prometheus_host, disable_ssl=False, method=123)
+        # Invalid value
+        with self.assertRaises(ValueError):
+            PrometheusConnect(url=self.prometheus_host, disable_ssl=False, method="PUT")
+            
+    def test_post_method_for_supported_functions(self):
+        """Test that PrometheusConnect uses POST for supported endpoints when method='POST', and returns a value."""
+        pc = PrometheusConnect(url=self.prometheus_host, disable_ssl=False, method="POST")
+        start_time = datetime.now() - timedelta(minutes=10)
+        end_time = datetime.now()
+
+        # custom_query should use POST and return something (or raise)
+        try:
+            result = pc.custom_query("up")
+            self.assertTrue(result is not None and result != [], "no metrics received from prometheus")
+        except Exception as e:
+            self.fail(f"custom_query('up') raised an unexpected exception: {e}")
+
+        # custom_query_range should use POST and return something (or raise)
+        try:
+            result = pc.custom_query_range("up", start_time=start_time, end_time=end_time, step="15")
+            self.assertTrue(result is not None and result != [], "no metrics received from prometheus")
+        except Exception as e:
+            self.fail(f"custom_query_range('up', ...) raised an unexpected exception: {e}")
+
+        # get_label_names should use POST and return something (or raise)
+        try:
+            result = pc.get_label_names()
+            self.assertTrue(result is not None and result != [], "no metrics received from prometheus")
+        except Exception as e:
+            self.fail(f"get_label_names() raised an unexpected exception: {e}")
+
+        # get_current_metric_value should use POST and return something (or raise)
+        try:
+            result = pc.get_current_metric_value("up")
+            self.assertTrue(result is not None and result != [], "no metrics received from prometheus")
+        except Exception as e:
+            self.fail(f"get_current_metric_value('up') raised an unexpected exception: {e}")
+
+        # get_metric_range_data should use POST and return something (or raise)
+        try:
+            result = pc.get_metric_range_data("up", start_time=start_time, end_time=end_time)
+            self.assertTrue(result is not None and result != [], "no metrics received from prometheus")
+        except Exception as e:
+            self.fail(f"get_metric_range_data('up', ...) raised an unexpected exception: {e}")
+
 
 class TestPrometheusConnectWithMockedNetwork(BaseMockedNetworkTestcase):
     """Network is blocked in this testcase, see base class."""
