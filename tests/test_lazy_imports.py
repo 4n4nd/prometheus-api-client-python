@@ -2,7 +2,6 @@
 import unittest
 import sys
 import subprocess
-import importlib
 
 
 class TestLazyImports(unittest.TestCase):
