@@ -54,10 +54,11 @@ class Metric:
             self.metric_values = metric.metric_values
             self.oldest_data_datetime = oldest_data_datetime
         else:
-            self.metric_name = metric["metric"]["__name__"]
+            self.metric_name = metric["metric"].get("__name__", None)
             self.label_config = deepcopy(metric["metric"])
+            if "__name__" in self.label_config:
+                del self.label_config["__name__"]
             self.oldest_data_datetime = oldest_data_datetime
-            del self.label_config["__name__"]
 
             # if it is a single value metric change key name
             if "value" in metric:
