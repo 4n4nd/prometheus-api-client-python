@@ -4,7 +4,6 @@ import bz2
 import os
 import json
 import logging
-import numpy
 from datetime import datetime, timedelta
 import requests
 from requests.adapters import HTTPAdapter
@@ -569,6 +568,8 @@ class PrometheusConnect:
                 'max': 6.009373
              }
         """
+        import numpy
+        
         if not isinstance(operations, list):
             raise TypeError("Operations can be only of type list")
         if len(operations) == 0:
