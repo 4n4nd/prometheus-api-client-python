@@ -139,6 +139,17 @@ class TestPrometheusConnect(unittest.TestCase):
         self.assertEqual(len(labels), 3)
         self.assertEqual(labels, ["__name__", "instance", "job"])
 
+    def test_get_series(self):  # noqa D102
+        start_time = datetime.now() - timedelta(hours=1)
+        end_time = datetime.now()
+        series = self.pc.get_series(start=start_time, end=end_time, params={"match[]": "up"})
+        self.assertIsInstance(series, list)
+        self.assertTrue(len(series) > 0, "no series data received from prometheus")
+        # Verify that each series entry is a dict with labels
+        for series_entry in series:
+            self.assertIsInstance(series_entry, dict)
+            self.assertIn("__name__", series_entry)
+
     def test_get_scrape_pools(self):  # noqa D102
         scrape_pools = self.pc.get_scrape_pools()
         self.assertIsInstance(scrape_pools, list)
@@ -252,6 +263,10 @@ class TestPrometheusConnectWithMockedNetwork(BaseMockedNetworkTestcase):
         self.assertEqual("HTTP Status Code 403 (b'BOOM!')", str(exc.exception))
 
         with self.assertRaises(PrometheusApiClientException) as exc:
+            self.pc.get_series(start=datetime.now() - timedelta(hours=1), end=datetime.now())
+        self.assertEqual("HTTP Status Code 403 (b'BOOM!')", str(exc.exception))
+
+        with self.assertRaises(PrometheusApiClientException) as exc:
             self.pc.get_current_metric_value("metric")
         self.assertEqual("HTTP Status Code 403 (b'BOOM!')", str(exc.exception))
 
@@ -283,6 +298,25 @@ class TestPrometheusConnectWithMockedNetwork(BaseMockedNetworkTestcase):
             self.assertEqual(handler.call_count, 1)
             request = handler.requests[0]
             self.assertEqual(request.path_url, "/api/v1/label/__name__/values")
+
+
+    def test_get_series_method(self):  # noqa D102
+        series_payload = {"status": "success", "data": [
+            {"__name__": "up", "job": "prometheus", "instance": "localhost:9090"},
+            {"__name__": "up", "job": "node", "instance": "localhost:9100"}
+        ]}
+
+        with self.mock_response(series_payload) as handler:
+            start_time = datetime.now() - timedelta(hours=1)
+            end_time = datetime.now()
+            result = self.pc.get_series(start=start_time, end=end_time)
+            self.assertTrue(len(result) > 0)
+            self.assertEqual(handler.call_count, 1)
+            request = handler.requests[0]
+            self.assertTrue(request.path_url.startswith("/api/v1/series"))
+            # Verify that start and end parameters are included
+            self.assertIn("start", request.url)
+            self.assertIn("end", request.url)
 
     def test_get_label_names_method(self):  # noqa D102
         all_metrics_payload = {"status": "success", "data": ["value1", "value2"]}
