@@ -11,6 +11,18 @@ To install the latest release:
 
 `pip install prometheus-api-client`
 
+To install with all optional dependencies (pandas, numpy, matplotlib):
+
+`pip install prometheus-api-client[all]`
+
+**Note:** Starting from version 0.6.0, pandas, numpy, and matplotlib are optional dependencies. 
+If you only need `PrometheusConnect` without DataFrame support or plotting capabilities, you can install the minimal version which significantly reduces memory footprint and installation time, especially on Alpine-based Docker images.
+
+To install only specific extras:
+- For DataFrame support: `pip install prometheus-api-client[dataframe]`
+- For numpy support: `pip install prometheus-api-client[numpy]`
+- For plotting support: `pip install prometheus-api-client[plot]`
+
 To install directly from this branch:
 
 `pip install https://github.com/4n4nd/prometheus-api-client-python/zipball/master`
