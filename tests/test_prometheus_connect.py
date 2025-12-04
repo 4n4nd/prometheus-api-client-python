@@ -93,22 +93,22 @@ class TestPrometheusConnect(unittest.TestCase):
         chunk_size = timedelta(minutes=7)
         end_time = datetime.now() - timedelta(minutes=10)
 
-        with self.assertRaises(ValueError, msg="specified chunk_size is too big"):
+        with self.assertRaises(ValueError):
             _ = self.pc.get_metric_range_data(
                 metric_name="up",
                 start_time=start_time,
                 end_time=end_time,
                 chunk_size=timedelta(minutes=30),
             )
-        with self.assertRaises(TypeError, msg="start_time accepted invalid value type"):
+        with self.assertRaises(TypeError):
             _ = self.pc.get_metric_range_data(
                 metric_name="up", start_time="20m", end_time=end_time, chunk_size=chunk_size
             )
-        with self.assertRaises(TypeError, msg="end_time accepted invalid value type"):
+        with self.assertRaises(TypeError):
             _ = self.pc.get_metric_range_data(
                 metric_name="up", start_time=start_time, end_time="10m", chunk_size=chunk_size
             )
-        with self.assertRaises(TypeError, msg="chunk_size accepted invalid value type"):
+        with self.assertRaises(TypeError):
             _ = self.pc.get_metric_range_data(
                 metric_name="up", start_time=start_time, end_time=end_time, chunk_size="10m"
             )
@@ -125,7 +125,7 @@ class TestPrometheusConnect(unittest.TestCase):
         self.assertTrue(len(aggregated_values) > 0, "no values received after aggregating")
 
     def test_get_metric_aggregation_with_incorrect_input_types(self):  # noqa D102
-        with self.assertRaises(TypeError, msg="operations accepted invalid value type"):
+        with self.assertRaises(TypeError):
             _ = self.pc.get_metric_aggregation(query="up", operations="sum")
     def test_retry_on_error(self):  # noqa D102
         retry = Retry(total=3, backoff_factor=0.1, status_forcelist=[400])
@@ -684,7 +684,7 @@ class TestPrometheusConnectWithMockedNetwork(BaseMockedNetworkTestcase):
         end_time = datetime.now()
 
         # Test with ValueError for end_time before start_time
-        with self.assertRaises(ValueError, msg="end_time must not be before start_time"):
+        with self.assertRaises(ValueError):
             self.pc.get_metric_range_data(
                 "up", start_time=end_time, end_time=start_time
             )
@@ -759,7 +759,7 @@ class TestPrometheusConnectWithMockedNetwork(BaseMockedNetworkTestcase):
         }
 
         with self.mock_response(query_payload):
-            with self.assertRaises(TypeError, msg="Invalid operation"):
+            with self.assertRaises(TypeError):
                 self.pc.get_metric_aggregation(query="up", operations=["invalid_operation"])
 
     def test_get_metric_aggregation_with_no_results(self):  # noqa D102
