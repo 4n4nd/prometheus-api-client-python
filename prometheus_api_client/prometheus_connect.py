@@ -612,7 +612,7 @@ class PrometheusConnect:
             elif operation.startswith("percentile"):
                 percentile = float(operation.split("_")[1])
                 aggregated_values["percentile_" + str(percentile)] = numpy.nanpercentile(
-                    query_values, percentile
+                    np_array, percentile
                 )
             elif operation == "deviation":
                 aggregated_values["deviation"] = numpy.nanstd(np_array)

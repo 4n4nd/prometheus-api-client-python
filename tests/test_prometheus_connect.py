@@ -1,5 +1,6 @@
 """Test module for class PrometheusConnect."""
 
+import math
 import unittest
 import os
 from datetime import datetime, timedelta
@@ -441,8 +442,6 @@ class TestPrometheusConnectWithMockedNetwork(BaseMockedNetworkTestcase):
             self.assertIn("percentile_50.0", aggregated_values)
 
             # Verify that results are not NaN
-            import math
-
             self.assertFalse(math.isnan(aggregated_values["sum"]), "Sum should not be NaN")
             self.assertFalse(math.isnan(aggregated_values["max"]), "Max should not be NaN")
             self.assertFalse(math.isnan(aggregated_values["min"]), "Min should not be NaN")
