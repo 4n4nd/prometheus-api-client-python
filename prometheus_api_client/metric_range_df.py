@@ -1,6 +1,14 @@
 """A pandas.DataFrame subclass for Prometheus range vector responses."""
-from pandas import DataFrame, to_datetime
-from pandas._typing import Axes, Dtype
+try:
+    from pandas import DataFrame, to_datetime
+    from pandas._typing import Axes, Dtype
+except ImportError as e:
+    raise ImportError(
+        "Pandas is required for MetricRangeDataFrame class. "
+        "Please install it with: pip install prometheus-api-client[dataframe] "
+        "or pip install prometheus-api-client[all]"
+    ) from e
+
 from typing import Optional, Sequence
 
 from prometheus_api_client.exceptions import MetricValueConversionError

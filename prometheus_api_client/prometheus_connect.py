@@ -4,7 +4,6 @@ import bz2
 import os
 import json
 import logging
-import numpy
 from datetime import datetime, timedelta
 import requests
 from requests.adapters import HTTPAdapter
@@ -569,6 +568,15 @@ class PrometheusConnect:
                 'max': 6.009373
              }
         """
+        try:
+            import numpy
+        except ImportError as e:
+            raise ImportError(
+                "NumPy is required for metric aggregation operations. "
+                "Please install it with: pip install prometheus-api-client[analytics] "
+                "or pip install prometheus-api-client[all]"
+            ) from e
+        
         if not isinstance(operations, list):
             raise TypeError("Operations can be only of type list")
         if len(operations) == 0:

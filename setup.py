@@ -7,8 +7,8 @@ with open("README.md", "r") as fh:
 
 
 def get_install_requires():
-    """Get requirements from requirements.txt."""
-    with open("requirements.txt", "r") as requirements_file:
+    """Get core requirements from requirements-core.txt."""
+    with open("requirements-core.txt", "r") as requirements_file:
         res = requirements_file.readlines()
         return [req.split(" ", maxsplit=1)[0] for req in res if req]
 
@@ -36,6 +36,13 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/4n4nd/prometheus-api-client-python",
     install_requires=get_install_requires(),
+    extras_require={
+        "dataframe": ["pandas>=1.4.0"],
+        "numpy": ["numpy"],
+        "plot": ["matplotlib"],
+        "analytics": ["numpy"],
+        "all": ["pandas>=1.4.0", "numpy", "matplotlib"],
+    },
     packages=setuptools.find_packages(),
     package_data={"prometheus-api-client": ["py.typed"]},
     tests_require=["httmock"],
