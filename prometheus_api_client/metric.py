@@ -1,7 +1,15 @@
 """A Class for metric object."""
 from copy import deepcopy
 import datetime
-import pandas
+
+try:
+    import pandas
+except ImportError as e:
+    raise ImportError(
+        "Pandas is required for Metric class. "
+        "Please install it with: pip install prometheus-api-client[dataframe] "
+        "or pip install prometheus-api-client[all]"
+    ) from e
 
 from prometheus_api_client.exceptions import MetricValueConversionError
 

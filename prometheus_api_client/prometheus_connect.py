@@ -568,7 +568,14 @@ class PrometheusConnect:
                 'max': 6.009373
              }
         """
-        import numpy
+        try:
+            import numpy
+        except ImportError as e:
+            raise ImportError(
+                "NumPy is required for metric aggregation operations. "
+                "Please install it with: pip install prometheus-api-client[analytics] "
+                "or pip install prometheus-api-client[all]"
+            ) from e
         
         if not isinstance(operations, list):
             raise TypeError("Operations can be only of type list")

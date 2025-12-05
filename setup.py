@@ -40,6 +40,7 @@ setuptools.setup(
         "dataframe": ["pandas>=1.4.0"],
         "numpy": ["numpy"],
         "plot": ["matplotlib"],
+        "analytics": ["numpy"],
         "all": ["pandas>=1.4.0", "numpy", "matplotlib"],
     },
     packages=setuptools.find_packages(),

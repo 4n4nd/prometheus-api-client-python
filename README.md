@@ -20,7 +20,7 @@ If you only need `PrometheusConnect` without DataFrame support or plotting capab
 
 To install only specific extras:
 - For DataFrame support: `pip install prometheus-api-client[dataframe]`
-- For numpy support: `pip install prometheus-api-client[numpy]`
+- For analytics/aggregation operations: `pip install prometheus-api-client[analytics]`
 - For plotting support: `pip install prometheus-api-client[plot]`
 
 To install directly from this branch:
