@@ -1,4 +1,5 @@
 """A Class for collection of metrics from a Prometheus Host."""
+
 from urllib.parse import urlparse
 import bz2
 import os
@@ -40,7 +41,7 @@ class PrometheusConnect:
         Example: {"http_proxy": "<ip_address/hostname:port>", "https_proxy": "<ip_address/hostname:port>"}
     :param session (Optional) Custom requests.Session to enable complex HTTP configuration
     :param timeout: (Optional) A timeout (in seconds) applied to all requests
-    :param method: (Optional) (str) HTTP Method (GET or POST) to use for Query APIs that allow POST 
+    :param method: (Optional) (str) HTTP Method (GET or POST) to use for Query APIs that allow POST
         (/query, /query_range and /labels). Use POST for large and complex queries. Default is GET.
     """
 
@@ -54,7 +55,7 @@ class PrometheusConnect:
         proxy: dict = None,
         session: Session = None,
         timeout: int = None,
-        method: str = "GET"
+        method: str = "GET",
     ):
         """Functions as a Constructor for the class PrometheusConnect."""
         if url is None:
@@ -68,7 +69,7 @@ class PrometheusConnect:
 
         if not isinstance(method, str):
             raise TypeError("Method must be a string")
-        
+
         method = method.upper()
         if method not in {"GET", "POST"}:
             raise ValueError("Method can only be GET or POST")
@@ -129,7 +130,6 @@ class PrometheusConnect:
         self._all_metrics = self.get_label_values(label_name="__name__", params=params)
         return self._all_metrics
 
-
     def get_series(self, start: datetime, end: datetime, params: dict = None):
         """
         Get a list series happening between start and end times.
@@ -163,7 +163,6 @@ class PrometheusConnect:
                 "HTTP Status Code {} ({!r})".format(response.status_code, response.content)
             )
         return labels
-
 
     def get_label_names(self, params: dict = None):
         """
@@ -479,7 +478,13 @@ class PrometheusConnect:
         return data
 
     def custom_query_range(
-        self, query: str, start_time: datetime, end_time: datetime, step: str, params: dict = None, timeout: int = None
+        self,
+        query: str,
+        start_time: datetime,
+        end_time: datetime,
+        step: str,
+        params: dict = None,
+        timeout: int = None,
     ):
         """
         Send a query_range to a Prometheus Host.
@@ -605,41 +610,40 @@ class PrometheusConnect:
         np_array = numpy.array(query_values)
         for operation in operations:
             if operation == "sum":
-                aggregated_values["sum"] = numpy.sum(np_array)
+                aggregated_values["sum"] = numpy.nansum(np_array)
             elif operation == "max":
-                aggregated_values["max"] = numpy.max(np_array)
+                aggregated_values["max"] = numpy.nanmax(np_array)
             elif operation == "min":
-                aggregated_values["min"] = numpy.min(np_array)
+                aggregated_values["min"] = numpy.nanmin(np_array)
             elif operation == "average":
-                aggregated_values["average"] = numpy.average(np_array)
+                aggregated_values["average"] = numpy.nanmean(np_array)
             elif operation.startswith("percentile"):
                 percentile = float(operation.split("_")[1])
-                aggregated_values["percentile_" + str(percentile)] = numpy.percentile(
-                    query_values, percentile
+                aggregated_values["percentile_" + str(percentile)] = numpy.nanpercentile(
+                    np_array, percentile
                 )
             elif operation == "deviation":
-                aggregated_values["deviation"] = numpy.std(np_array)
+                aggregated_values["deviation"] = numpy.nanstd(np_array)
             elif operation == "variance":
-                aggregated_values["variance"] = numpy.var(np_array)
+                aggregated_values["variance"] = numpy.nanvar(np_array)
             else:
                 raise TypeError("Invalid operation: " + operation)
         return aggregated_values
-
 
     def get_scrape_pools(self) -> list[str]:
         """
         Get a list of all scrape pools in activeTargets.
         """
         scrape_pools = []
-        for target in self.get_targets()['activeTargets']:
-            scrape_pools.append(target['scrapePool'])
+        for target in self.get_targets()["activeTargets"]:
+            scrape_pools.append(target["scrapePool"])
         return list(set(scrape_pools))
 
     def get_targets(self, state: str = None, scrape_pool: str = None):
         """
         Get a list of all targets from Prometheus.
 
-        :param state: (str) Optional filter for target state ('active', 'dropped', 'any'). 
+        :param state: (str) Optional filter for target state ('active', 'dropped', 'any').
                      If None, returns both active and dropped targets.
         :param scrape_pool: (str) Optional filter by scrape pool name
         :returns: (dict) A dictionary containing active and dropped targets
@@ -649,9 +653,9 @@ class PrometheusConnect:
         """
         params = {}
         if state:
-            params['state'] = state
+            params["state"] = state
         if scrape_pool:
-            params['scrapePool'] = scrape_pool
+            params["scrapePool"] = scrape_pool
 
         response = self._session.request(
             method="GET",
@@ -668,8 +672,7 @@ class PrometheusConnect:
             return response.json()["data"]
         else:
             raise PrometheusApiClientException(
-                "HTTP Status Code {} ({!r})".format(
-                    response.status_code, response.content)
+                "HTTP Status Code {} ({!r})".format(response.status_code, response.content)
             )
 
     def get_target_metadata(self, target: dict[str, str], metric: str = None):
@@ -687,12 +690,11 @@ class PrometheusConnect:
 
         # Convert target dict to label selector string
         if metric:
-            params['metric'] = metric
+            params["metric"] = metric
 
         if target:
-            match_target = "{" + \
-                ",".join(f'{k}="{v}"' for k, v in target.items()) + "}"
-            params['match_target'] = match_target
+            match_target = "{" + ",".join(f'{k}="{v}"' for k, v in target.items()) + "}"
+            params["match_target"] = match_target
 
         response = self._session.request(
             method="GET",
@@ -709,8 +711,7 @@ class PrometheusConnect:
             return response.json()["data"]
         else:
             raise PrometheusApiClientException(
-                "HTTP Status Code {} ({!r})".format(
-                    response.status_code, response.content)
+                "HTTP Status Code {} ({!r})".format(response.status_code, response.content)
             )
 
     def get_metric_metadata(self, metric: str, limit: int = None, limit_per_metric: int = None):
@@ -729,13 +730,13 @@ class PrometheusConnect:
         params = {}
 
         if metric:
-            params['metric'] = metric
+            params["metric"] = metric
 
         if limit:
-            params['limit'] = limit
+            params["limit"] = limit
 
         if limit_per_metric:
-            params['limit_per_metric'] = limit_per_metric
+            params["limit_per_metric"] = limit_per_metric
 
         response = self._session.request(
             method="GET",
@@ -753,15 +754,16 @@ class PrometheusConnect:
             formatted_data = []
             for k, v in data.items():
                 for v_ in v:
-                    formatted_data.append({
-                        "metric_name": k,
-                        "type": v_.get('type', 'unknown'),
-                        "help": v_.get('help', ''),
-                        "unit": v_.get('unit', '')
-                    })
+                    formatted_data.append(
+                        {
+                            "metric_name": k,
+                            "type": v_.get("type", "unknown"),
+                            "help": v_.get("help", ""),
+                            "unit": v_.get("unit", ""),
+                        }
+                    )
             return formatted_data
         else:
             raise PrometheusApiClientException(
-                "HTTP Status Code {} ({!r})".format(
-                    response.status_code, response.content)
+                "HTTP Status Code {} ({!r})".format(response.status_code, response.content)
             )
