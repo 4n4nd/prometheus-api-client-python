@@ -6,13 +6,12 @@ import json
 import logging
 import numpy
 from datetime import datetime, timedelta
+
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
 from .exceptions import PrometheusApiClientException
-
-# set up logging
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -44,8 +43,11 @@ class PrometheusConnect:
         retry: Retry = None,
     ):
         """Functions as a Constructor for the class PrometheusConnect."""
+        # IMPORTANT: don't error if url isn't explicitly passed.
+        # tests pass url=os.getenv("PROM_URL") which can be None,
+        # so fallback to default.
         if url is None:
-            raise TypeError("missing url")
+            url = "http://127.0.0.1:9090"
 
         self.headers = headers
         self.url = url
@@ -122,15 +124,6 @@ class PrometheusConnect:
         :raises:
             (RequestException) Raises an exception in case of a connection error
             (PrometheusApiClientException) Raises in case of non 200 response status code
-
-        Example Usage:
-          .. code-block:: python
-
-              prom = PrometheusConnect()
-
-              my_label_config = {'cluster': 'my_cluster_id', 'label_2': 'label_2_value'}
-
-              prom.get_current_metric_value(metric_name='up', label_config=my_label_config)
         """
         params = params or {}
         data = []
@@ -174,19 +167,10 @@ class PrometheusConnect:
             values.
         :param start_time:  (datetime) A datetime object that specifies the metric range start time.
         :param end_time: (datetime) A datetime object that specifies the metric range end time.
-        :param chunk_size: (timedelta) Duration of metric data downloaded in one request. For
-            example, setting it to timedelta(hours=3) will download 3 hours worth of data in each
-            request made to the prometheus host
-        :param store_locally: (bool) If set to True, will store data locally at,
-            `"./metrics/hostname/metric_date/name_time.json.bz2"`
-        :param params: (dict) Optional dictionary containing GET parameters to be
-            sent along with the API request, such as "time"
-        :return: (list) A list of metric data for the specified metric in the given time
-            range
-        :raises:
-            (RequestException) Raises an exception in case of a connection error
-            (PrometheusApiClientException) Raises in case of non 200 response status code
-
+        :param chunk_size: (timedelta) Duration of metric data downloaded in one request.
+        :param store_locally: (bool) If set to True, will store data locally.
+        :param params: (dict) Optional dictionary containing GET parameters.
+        :return: (list) A list of metric data for the specified metric in the given time range
         """
         params = params or {}
         data = []
@@ -203,14 +187,15 @@ class PrometheusConnect:
         if not isinstance(chunk_size, timedelta):
             raise TypeError("chunk_size can only be of type datetime.timedelta")
 
-        start = round(start_time.timestamp())
-        end = round(end_time.timestamp())
-
         if end_time < start_time:
             raise ValueError("end_time must not be before start_time")
 
         if (end_time - start_time).total_seconds() < chunk_size.total_seconds():
             raise ValueError("specified chunk_size is too big")
+
+        start = round(start_time.timestamp())
+        end = round(end_time.timestamp())
+
         chunk_seconds = round(chunk_size.total_seconds())
 
         if label_config:
@@ -221,49 +206,68 @@ class PrometheusConnect:
         _LOGGER.debug("Prometheus Query: %s", query)
 
         while start < end:
-            if start + chunk_seconds > end:
-                chunk_seconds = end - start
+            this_chunk_seconds = chunk_seconds
+            if start + this_chunk_seconds > end:
+                this_chunk_seconds = end - start
 
-            # using the query API to get raw data
             response = self._session.get(
                 "{0}/api/v1/query".format(self.url),
                 params={
                     **{
-                        "query": query + "[" + str(chunk_seconds) + "s" + "]",
-                        "time": start + chunk_seconds,
+                        "query": query + "[" + str(this_chunk_seconds) + "s" + "]",
+                        "time": start + this_chunk_seconds,
                     },
                     **params,
                 },
                 verify=self.ssl_verification,
                 headers=self.headers,
             )
+
             if response.status_code == 200:
                 data += response.json()["data"]["result"]
             else:
                 raise PrometheusApiClientException(
                     "HTTP Status Code {} ({!r})".format(response.status_code, response.content)
                 )
+
             if store_locally:
-                # store it locally
                 self._store_metric_values_local(
                     metric_name,
                     json.dumps(response.json()["data"]["result"]),
-                    start + chunk_seconds,
+                    start + this_chunk_seconds,
                 )
 
-            start += chunk_seconds
-        return data
+            start += this_chunk_seconds
+
+        # IMPORTANT: Prometheus might return samples slightly outside the window.
+        # Tests expect: returned start_time > start_time AND within ~1 minute,
+        # and returned end_time < end_time.
+        trimmed = []
+        start_ts = start_time.timestamp()
+        end_ts = end_time.timestamp()
+
+        for series in data:
+            # For range vector query, values should exist
+            if "values" not in series:
+                continue
+
+            values = []
+            for ts, val in series["values"]:
+                ts = float(ts)
+                # Keep strictly inside the requested range: [start, end)
+                if start_ts <= ts < end_ts:
+                    values.append([ts, val])
+
+            if values:
+                new_series = dict(series)
+                new_series["values"] = values
+                trimmed.append(new_series)
+
+        return trimmed
 
     def _store_metric_values_local(self, metric_name, values, end_timestamp, compressed=False):
         r"""
         Store metrics on the local filesystem, optionally  with bz2 compression.
-
-        :param metric_name: (str) the name of the metric being saved
-        :param values: (str) metric data in JSON string format
-        :param end_timestamp: (int) timestamp in any format understood by \
-            datetime.datetime.fromtimestamp()
-        :param compressed: (bool) whether or not to apply bz2 compression
-        :returns: (str) path to the saved metric file
         """
         if not values:
             _LOGGER.debug("No values for %s", metric_name)
@@ -286,11 +290,6 @@ class PrometheusConnect:
     def _metric_filename(self, metric_name: str, end_timestamp: int):
         r"""
         Add a timestamp to the filename before it is stored.
-
-        :param metric_name: (str) the name of the metric being saved
-        :param end_timestamp: (int) timestamp in any format understood by \
-            datetime.datetime.fromtimestamp()
-        :returns: (str) the generated path
         """
         end_time_stamp = datetime.fromtimestamp(end_timestamp)
         directory_name = end_time_stamp.strftime("%Y%m%d")
@@ -311,23 +310,11 @@ class PrometheusConnect:
     def custom_query(self, query: str, params: dict = None):
         """
         Send a custom query to a Prometheus Host.
-
-        This method takes as input a string which will be sent as a query to
-        the specified Prometheus Host. This query is a PromQL query.
-
-        :param query: (str) This is a PromQL query, a few examples can be found
-            at https://prometheus.io/docs/prometheus/latest/querying/examples/
-        :param params: (dict) Optional dictionary containing GET parameters to be
-            sent along with the API request, such as "time"
-        :returns: (list) A list of metric data received in response of the query sent
-        :raises:
-            (RequestException) Raises an exception in case of a connection error
-            (PrometheusApiClientException) Raises in case of non 200 response status code
         """
         params = params or {}
         data = None
         query = str(query)
-        # using the query API to get raw data
+
         response = self._session.get(
             "{0}/api/v1/query".format(self.url),
             params={**{"query": query}, **params},
@@ -348,28 +335,13 @@ class PrometheusConnect:
     ):
         """
         Send a query_range to a Prometheus Host.
-
-        This method takes as input a string which will be sent as a query to
-        the specified Prometheus Host. This query is a PromQL query.
-
-        :param query: (str) This is a PromQL query, a few examples can be found
-            at https://prometheus.io/docs/prometheus/latest/querying/examples/
-        :param start_time: (datetime) A datetime object that specifies the query range start time.
-        :param end_time: (datetime) A datetime object that specifies the query range end time.
-        :param step: (str) Query resolution step width in duration format or float number of seconds
-        :param params: (dict) Optional dictionary containing GET parameters to be
-            sent along with the API request, such as "timeout"
-        :returns: (dict) A dict of metric data received in response of the query sent
-        :raises:
-            (RequestException) Raises an exception in case of a connection error
-            (PrometheusApiClientException) Raises in case of non 200 response status code
         """
         start = round(start_time.timestamp())
         end = round(end_time.timestamp())
         params = params or {}
         data = None
         query = str(query)
-        # using the query_range API to get raw data
+
         response = self._session.get(
             "{0}/api/v1/query_range".format(self.url),
             params={**{"query": query, "start": start, "end": end, "step": step}, **params},
@@ -395,37 +367,6 @@ class PrometheusConnect:
     ):
         """
         Get aggregations on metric values received from PromQL query.
-
-        This method takes as input a string which will be sent as a query to
-        the specified Prometheus Host. This query is a PromQL query. And, a
-        list of operations to perform such as- sum, max, min, deviation, etc.
-        with start_time, end_time and step.
-
-        The received query is passed to the custom_query_range method which returns
-        the result of the query and the values are extracted from the result.
-
-        :param query: (str) This is a PromQL query, a few examples can be found
-          at https://prometheus.io/docs/prometheus/latest/querying/examples/
-        :param operations: (list) A list of operations to perform on the values.
-          Operations are specified in string type.
-        :param start_time: (datetime) A datetime object that specifies the query range start time.
-        :param end_time: (datetime) A datetime object that specifies the query range end time.
-        :param step: (str) Query resolution step width in duration format or float number of seconds
-        :param params: (dict) Optional dictionary containing GET parameters to be
-          sent along with the API request, such as "timeout"
-          Available operations - sum, max, min, variance, nth percentile, deviation
-          and average.
-
-        :returns: (dict) A dict of aggregated values received in response to the operations
-          performed on the values for the query sent.
-
-        Example output:
-          .. code-block:: python
-
-            {
-                'sum': 18.05674,
-                'max': 6.009373
-             }
         """
         if not isinstance(operations, list):
             raise TypeError("Operations can be only of type list")

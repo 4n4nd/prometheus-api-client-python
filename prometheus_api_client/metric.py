@@ -42,7 +42,6 @@ class Metric:
 
           # only for the first item in the list
           my_metric_object = Metric(metric_data[0], datetime.timedelta(days=10))
-
     """
 
     def __init__(self, metric, oldest_data_datetime=None):
@@ -86,33 +85,16 @@ class Metric:
 
         Check whether two metrics are the same (are the same time-series regardless of their data)
 
-        Example Usage:
-          .. code-block:: python
-
-              metric_1 = Metric(metric_data_1)
-
-              metric_2 = Metric(metric_data_2)
-
-              print(metric_1 == metric_2) # will print True if they belong to the same time-series
-
-        :return: (bool) If two Metric objects belong to the same time-series,
-                 i.e. same name and label config, it will return True, else False
+        :return: (bool) True if they belong to the same time-series, else False
         """
         return bool(
-            (self.metric_name == other.metric_name) and (self.label_config == other.label_config)
+            (self.metric_name == other.metric_name)
+            and (self.label_config == other.label_config)
         )
 
     def __str__(self):
         """
         Make it print in a cleaner way when print function is used on a Metric object.
-
-        Example Usage:
-          .. code-block:: python
-
-              metric_1 = Metric(metric_data_1)
-
-              print(metric_1) # will print the name, labels and the head of the dataframe
-
         """
         name = "metric_name: " + repr(self.metric_name) + "\n"
         labels = "label_config: " + repr(self.label_config) + "\n"
@@ -124,46 +106,35 @@ class Metric:
         r"""
         Overloading operator ``+``.
 
-        Add two metric objects for the same time-series
-
-        Example Usage:
-          .. code-block:: python
-
-            metric_1 = Metric(metric_data_1)
-            metric_2 = Metric(metric_data_2)
-            metric_12 = metric_1 + metric_2 # will add the data in ``metric_2`` to ``metric_1``
-                                            # so if any other parameters are set in ``metric_1``
-                                            # will also be set in ``metric_12``
-                                            # (like ``oldest_data_datetime``)
-
-        :return: (`Metric`) Returns a `Metric` object with the combined metric data
-          of the two added metrics
-
-        :raises: (TypeError) Raises an exception when two metrics being added are
-          from different metric time-series
+        Add two metric objects for the same time-series.
         """
         if self == other:
             new_metric = deepcopy(self)
-            new_metric.metric_values = new_metric.metric_values.append(
-                other.metric_values, ignore_index=True
+
+            # pandas.DataFrame.append was removed in pandas 2.0+
+            # Use pandas.concat instead
+            new_metric.metric_values = pandas.concat(
+                [new_metric.metric_values, other.metric_values],
+                ignore_index=True,
             )
+
             new_metric.metric_values = new_metric.metric_values.dropna()
             new_metric.metric_values = (
                 new_metric.metric_values.drop_duplicates("ds")
                 .sort_values(by=["ds"])
                 .reset_index(drop=True)
             )
+
             # if oldest_data_datetime is set, trim the dataframe and only keep the newer data
             if new_metric.oldest_data_datetime:
                 if isinstance(new_metric.oldest_data_datetime, datetime.timedelta):
-                    # create a time range mask
                     mask = new_metric.metric_values["ds"] >= (
-                        new_metric.metric_values.iloc[-1, 0] - abs(new_metric.oldest_data_datetime)
+                        new_metric.metric_values.iloc[-1, 0]
+                        - abs(new_metric.oldest_data_datetime)
                     )
                 else:
-                    # create a time range mask
                     mask = new_metric.metric_values["ds"] >= new_metric.oldest_data_datetime
-                # truncate the df within the mask
+
                 new_metric.metric_values = new_metric.metric_values.loc[mask]
 
             # Update the metric start time and the metric end time for the new Metric
@@ -176,6 +147,7 @@ class Metric:
             error_string = "Different metric names"
         else:
             error_string = "Different metric labels"
+
         raise TypeError("Cannot Add different metric types. " + error_string)
 
     def plot(self):
@@ -184,6 +156,5 @@ class Metric:
             fig, axis = plt.subplots()
             axis.plot_date(self.metric_values.ds, self.metric_values.y, linestyle=":")
             fig.autofmt_xdate()
-        # if matplotlib was not imported
         else:
             raise ImportError("matplotlib was not found")
