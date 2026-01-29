@@ -10,6 +10,7 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 from requests import Session
 
+from .metric_query import MetricLabelQuery, query_to_str
 from .exceptions import PrometheusApiClientException
 
 # set up logging
@@ -229,14 +230,14 @@ class PrometheusConnect:
         return labels
 
     def get_current_metric_value(
-        self, metric_name: str, label_config: dict = None, params: dict = None
+        self, metric_name: str, label_config: MetricLabelQuery = None, params: dict = None
     ):
         r"""
         Get the current metric value for the specified metric and label configuration.
 
         :param metric_name: (str) The name of the metric
-        :param label_config: (dict) A dictionary that specifies metric labels and their
-            values
+        :param label_config: (MetricLabelQuery) A dictionary specifying metric labels and their
+            values, with optional operator (default is equality).
         :param params: (dict) Optional dictionary containing GET parameters to be sent
             along with the API request, such as "time"
         :returns: (list) A list of current metric values for the specified metric
@@ -249,17 +250,13 @@ class PrometheusConnect:
 
               prom = PrometheusConnect()
 
-              my_label_config = {'cluster': 'my_cluster_id', 'label_2': 'label_2_value'}
+              my_label_config = {'cluster': 'my_cluster_id', 'label_2': ('=~','label_2_.*')}
 
               prom.get_current_metric_value(metric_name='up', label_config=my_label_config)
         """
         params = params or {}
         data = []
-        if label_config:
-            label_list = [str(key + "=" + "'" + label_config[key] + "'") for key in label_config]
-            query = metric_name + "{" + ",".join(label_list) + "}"
-        else:
-            query = metric_name
+        query = query_to_str(metric_name, label_query=label_config)
 
         # using the query API to get raw data
         response = self._session.request(
@@ -284,7 +281,7 @@ class PrometheusConnect:
     def get_metric_range_data(
         self,
         metric_name: str,
-        label_config: dict = None,
+        label_config: MetricLabelQuery = None,
         start_time: datetime = (datetime.now() - timedelta(minutes=10)),
         end_time: datetime = datetime.now(),
         chunk_size: timedelta = None,
@@ -295,8 +292,8 @@ class PrometheusConnect:
         Get the current metric value for the specified metric and label configuration.
 
         :param metric_name: (str) The name of the metric.
-        :param label_config: (dict) A dictionary specifying metric labels and their
-            values.
+        :param label_config: (MetricLabelQuery) A dictionary specifying metric labels and their
+            values, with optional operator (default is equality).
         :param start_time:  (datetime) A datetime object that specifies the metric range start time.
         :param end_time: (datetime) A datetime object that specifies the metric range end time.
         :param chunk_size: (timedelta) Duration of metric data downloaded in one request. For
@@ -338,11 +335,7 @@ class PrometheusConnect:
             raise ValueError("specified chunk_size is too big")
         chunk_seconds = round(chunk_size.total_seconds())
 
-        if label_config:
-            label_list = [str(key + "=" + "'" + label_config[key] + "'") for key in label_config]
-            query = metric_name + "{" + ",".join(label_list) + "}"
-        else:
-            query = metric_name
+        query = query_to_str(metric_name, label_query=label_config)
         _LOGGER.debug("Prometheus Query: %s", query)
 
         while start < end:
