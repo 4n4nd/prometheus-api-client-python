@@ -395,5 +395,14 @@ class TestPrometheusConnectWithMockedNetwork(BaseMockedNetworkTestcase):
             request = handler.requests[0]
             self.assertEqual(request.path_url, "/api/v1/label/label_name/values")
 
+    def test_close(self):  # noqa D102
+        self.pc.close()  # must not raise
+
+    def test_context_manager(self):  # noqa D102
+        with PrometheusConnect(url="http://doesnt_matter.xyz", disable_ssl=True) as pc:
+            self.assertIsInstance(pc, PrometheusConnect)
+        pc.close()  # idempotent — must not raise after __exit__
+
+
 if __name__ == "__main__":
     unittest.main()

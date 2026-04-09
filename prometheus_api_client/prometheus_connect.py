@@ -94,6 +94,17 @@ class PrometheusConnect:
             self._session.proxies = proxy
         self._session.mount(self.url, HTTPAdapter(max_retries=retry))
 
+    def close(self) -> None:
+        """Close the underlying HTTP session and release connection-pool resources."""
+        self._session.close()
+
+    def __enter__(self):
+        """Support usage as a context manager: ``with PrometheusConnect(...) as pc:``"""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
     def check_prometheus_connection(self, params: dict = None) -> bool:
         """
         Check Promethus connection.
