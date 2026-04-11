@@ -42,7 +42,7 @@ class MetricRangeDataFrame(DataFrame):
       .. code-block:: python
 
           prom = PrometheusConnect()
-          metric_data = prom.get_current_metric_value(metric_name='up', label_config=my_label_config)
+          metric_data = prom.get_metric_range_data(metric_name='up', label_config=my_label_config)
           metric_df = MetricRangeDataFrame(metric_data)
           metric_df.head()
           '''
