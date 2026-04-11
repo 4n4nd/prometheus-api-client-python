@@ -38,7 +38,7 @@ class PrometheusConnect:
         requests library auth parameter for further explanation.
     :param proxy: (Optional) Proxies dictionary to enable connection through proxy.
         Example: {"http_proxy": "<ip_address/hostname:port>", "https_proxy": "<ip_address/hostname:port>"}
-    :param session (Optional) Custom requests.Session to enable complex HTTP configuration
+    :param session: (Optional) Custom requests.Session to enable complex HTTP configuration
     :param timeout: (Optional) A timeout (in seconds) applied to all requests
     :param method: (Optional) (str) HTTP Method (GET or POST) to use for Query APIs that allow POST 
         (/query, /query_range and /labels). Use POST for large and complex queries. Default is GET.
@@ -444,8 +444,8 @@ class PrometheusConnect:
         This method takes as input a string which will be sent as a query to
         the specified Prometheus Host. This query is a PromQL query.
 
-        :param query: (str) This is a PromQL query, a few examples can be found
-            at https://prometheus.io/docs/prometheus/latest/querying/examples/
+        :param query: (str) This is a PromQL query, a few examples can be found at
+            `PromQL query examples <https://prometheus.io/docs/prometheus/latest/querying/examples/>`_
         :param params: (dict) Optional dictionary containing GET parameters to be
             sent along with the API request, such as "time"
         :param timeout: (Optional) A timeout (in seconds) applied to the request
@@ -487,8 +487,8 @@ class PrometheusConnect:
         This method takes as input a string which will be sent as a query to
         the specified Prometheus Host. This query is a PromQL query.
 
-        :param query: (str) This is a PromQL query, a few examples can be found
-            at https://prometheus.io/docs/prometheus/latest/querying/examples/
+        :param query: (str) This is a PromQL query, a few examples can be found at
+            `PromQL query examples <https://prometheus.io/docs/prometheus/latest/querying/examples/>`_
         :param start_time: (datetime) A datetime object that specifies the query range start time.
         :param end_time: (datetime) A datetime object that specifies the query range end time.
         :param step: (str) Query resolution step width in duration format or float number of seconds
@@ -545,8 +545,8 @@ class PrometheusConnect:
         The received query is passed to the custom_query_range method which returns
         the result of the query and the values are extracted from the result.
 
-        :param query: (str) This is a PromQL query, a few examples can be found
-          at https://prometheus.io/docs/prometheus/latest/querying/examples/
+        :param query: (str) This is a PromQL query, a few examples can be found at
+          `PromQL query examples <https://prometheus.io/docs/prometheus/latest/querying/examples/>`_
         :param operations: (list) A list of operations to perform on the values.
           Operations are specified in string type.
         :param start_time: (datetime) A datetime object that specifies the query range start time.
