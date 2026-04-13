@@ -10,6 +10,8 @@ Welcome to Prometheus Client API Python's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   source/modules
+
 
 
 Indices and tables
