@@ -11,7 +11,7 @@ To install the latest release:
 
 `pip install prometheus-api-client`
 
-To install with all optional dependencies (pandas, numpy, matplotlib):
+To install with all optional dependencies (pandas, numpy, matplotlib, aiohttp):
 
 `pip install prometheus-api-client[all]`
 
@@ -22,6 +22,7 @@ To install only specific extras:
 - For DataFrame support: `pip install prometheus-api-client[dataframe]`
 - For analytics/aggregation operations: `pip install prometheus-api-client[analytics]`
 - For plotting support: `pip install prometheus-api-client[plot]`
+- For asynchronous Prometheus client support: `pip install prometheus-api-client[async]`
 
 To install directly from this branch:
 
@@ -208,6 +209,54 @@ metric_df.head()
 """
 ```
 
+#### Asynchronous Prometheus Client
+
+The library also provides `AsyncPrometheusConnect` for applications that use Python's asyncio event loop. It uses aiohttp to perform non-blocking HTTP requests.
+
+```python
+import asyncio
+from prometheus_api_client import AsyncPrometheusConnect
+
+async def main():
+    async with AsyncPrometheusConnect(
+        url="http://localhost:9090"
+    ) as prom:
+        # Check the Prometheus connection
+        connected = await prom.check_prometheus_connection()
+        print("Connected:", connected)
+
+        # Fetch all metric names
+        metrics = await prom.all_metrics()
+        print(metrics)
+
+        # Execute an instant PromQL query
+        result = await prom.custom_query(
+            query="up"
+        )
+        print(result)
+
+asyncio.run(main())
+```
+
+You can also execute range queries and retrieve metric data asynchronously:
+
+```python
+from datetime import datetime, timedelta, timezone
+
+async def fetch_range(prom):
+    end_time = datetime.now(timezone.utc)
+    start_time = end_time - timedelta(hours=1)
+
+    result = await prom.custom_query_range(
+        query="up",
+        start_time=start_time,
+        end_time=end_time,
+        step="15",
+    )
+    return result
+```
+
+`AsyncPrometheusConnect` supports asynchronous context management. If you don't use `async with`, close the client explicitly with `await prom.close()` when finished.
 
 For more functions included in the `prometheus-api-client` library, please refer to this [documentation.](https://prometheus-api-client-python.readthedocs.io/en/master/source/prometheus_api_client.html)
 

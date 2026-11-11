@@ -4,3 +4,4 @@ pandas>=1.4.0
 numpy
 matplotlib
 httmock
+aiohttp>=3.9,<4

@@ -29,6 +29,14 @@ prometheus\_api\_client.prometheus\_connect module
    :undoc-members:
    :show-inheritance:
 
+prometheus_api_client.async_prometheus_connect module
+------------------------------------------------------
+
+.. automodule:: prometheus_api_client.async_prometheus_connect
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 prometheus\_api\_client.exceptions module
 --------------------------------------------------
 

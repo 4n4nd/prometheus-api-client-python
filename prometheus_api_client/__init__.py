@@ -8,6 +8,9 @@ def __getattr__(name):
     if name == "PrometheusConnect":
         from .prometheus_connect import PrometheusConnect
         return PrometheusConnect
+    elif name == "AsyncPrometheusConnect":
+        from .async_prometheus_connect import AsyncPrometheusConnect
+        return AsyncPrometheusConnect
     elif name == "Metric":
         from .metric import Metric
         return Metric
