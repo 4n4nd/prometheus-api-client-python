@@ -11,7 +11,7 @@ To install the latest release:
 
 `pip install prometheus-api-client`
 
-To install with all optional dependencies (pandas, numpy, matplotlib):
+To install with all optional dependencies (pandas, numpy, matplotlib, aiohttp):
 
 `pip install prometheus-api-client[all]`
 
@@ -22,6 +22,7 @@ To install only specific extras:
 - For DataFrame support: `pip install prometheus-api-client[dataframe]`
 - For analytics/aggregation operations: `pip install prometheus-api-client[analytics]`
 - For plotting support: `pip install prometheus-api-client[plot]`
+- For asynchronous Prometheus client support: `pip install prometheus-api-client[async]`
 
 To install directly from this branch:
 

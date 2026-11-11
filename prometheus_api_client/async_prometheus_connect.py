@@ -4,7 +4,14 @@ from datetime import datetime, timedelta
 from typing import Optional
 from urllib.parse import urlparse
 
-import aiohttp
+try:
+    import aiohttp
+except ImportError as exc:
+    raise ImportError(
+        "aiohttp is required for AsyncPrometheusConnect. "
+        "Install it with: pip install prometheus-api-client[async]"
+    ) from exc
+
 import asyncio
 import bz2
 import math
@@ -22,6 +29,8 @@ class AsyncPrometheusConnect:
     :param url: URL of the Prometheus host.
     :param headers: Optional HTTP headers.
     :param disable_ssl: Disable SSL certificate verification when True.
+    :param ssl_context: Optional ssl.SSLContext for custom CA or client
+        certificate configuration.
     :param auth: Optional aiohttp.BasicAuth instance or (username, password) tuple.
     :param proxy: Optional proxy dictionary.
     :param timeout: Optional request timeout in seconds.
@@ -35,6 +44,7 @@ class AsyncPrometheusConnect:
         url: str = "http://127.0.0.1:9090",
         headers: Optional[dict] = None,
         disable_ssl: bool = False,
+        ssl_context=None,
         auth=None,
         proxy: Optional[dict] = None,
         timeout: Optional[float] = None,
@@ -42,6 +52,7 @@ class AsyncPrometheusConnect:
         retry: int = 3,
         retry_backoff_factor: float = 1.0,
     ):
+        """Initialize the asynchronous Prometheus client."""
         if url is None:
             raise TypeError("missing url")
 
@@ -70,14 +81,15 @@ class AsyncPrometheusConnect:
             isinstance(timeout, bool)
             or not isinstance(timeout, (int, float))
             or not math.isfinite(timeout)
-            or timeout < 0
+            or timeout <= 0
         ):
-            raise ValueError("timeout must be a finite, non-negative number")
+            raise ValueError("timeout must be a finite, positive number")
 
         self.url = url.rstrip("/")
         self.prometheus_host = urlparse(self.url).netloc
         self.headers = headers
         self.disable_ssl = disable_ssl
+        self.ssl_context = ssl_context
         self.auth = auth
         self.proxy = proxy
         self._timeout = timeout
@@ -91,7 +103,7 @@ class AsyncPrometheusConnect:
     async def _get_session(self):
         """Create and return the aiohttp session when needed."""
         if self._session is None or self._session.closed:
-            self._session = aiohttp.ClientSession()
+            self._session = aiohttp.ClientSession(trust_env=True)
         return self._session
 
     def _get_auth(self):
@@ -101,18 +113,27 @@ class AsyncPrometheusConnect:
         return self.auth
 
     def _get_proxy(self):
-        """Select the configured proxy for the Prometheus URL scheme."""
+        """Select the configured proxy for the Prometheus URL."""
         if not self.proxy:
             return None
 
-        scheme = urlparse(self.url).scheme
-        return self.proxy.get(
+        parsed_url = urlparse(self.url)
+        scheme = parsed_url.scheme
+        host = parsed_url.netloc
+
+        proxy_keys = (
+            "{}://{}".format(scheme, host),
             scheme,
-            self.proxy.get(
-                "{}_proxy".format(scheme),
-                self.proxy.get("all"),
-            ),
+            "all://{}".format(host),
+            "all",
+            "{}_proxy".format(scheme),
         )
+
+        for key in proxy_keys:
+            if key in self.proxy:
+                return self.proxy[key]
+
+        return None
 
     async def _request(self, endpoint: str, params: dict, timeout=None, method=None):
         """Perform an asynchronous request with retry support."""
@@ -124,12 +145,13 @@ class AsyncPrometheusConnect:
             isinstance(request_timeout, bool)
             or not isinstance(request_timeout, (int, float))
             or not math.isfinite(request_timeout)
-            or request_timeout < 0
+            or request_timeout <= 0
         ):
-            raise ValueError("timeout must be a finite, non-negative number")
+            raise ValueError("timeout must be a finite, positive number")
 
+        request_kwargs = {}
         if request_timeout is not None:
-            request_timeout = aiohttp.ClientTimeout(total=request_timeout)
+            request_kwargs["timeout"] = aiohttp.ClientTimeout(total=request_timeout)
 
         request_method = method or self._method
         request_url = "{}/api/v1/{}".format(self.url, endpoint)
@@ -145,8 +167,10 @@ class AsyncPrometheusConnect:
                     headers=self.headers,
                     auth=self._get_auth(),
                     proxy=self._get_proxy(),
-                    ssl=not self.disable_ssl,
-                    timeout=request_timeout,
+                    ssl=(
+                        self.ssl_context if self.ssl_context is not None else not self.disable_ssl
+                    ),
+                    **request_kwargs,
                 ) as response:
                     if response.status == 200:
                         payload = await response.json()
@@ -223,9 +247,9 @@ class AsyncPrometheusConnect:
         """Check whether the Prometheus endpoint is reachable."""
         session = await self._get_session()
 
-        request_timeout = self._timeout
-        if request_timeout is not None:
-            request_timeout = aiohttp.ClientTimeout(total=request_timeout)
+        request_kwargs = {}
+        if self._timeout is not None:
+            request_kwargs["timeout"] = aiohttp.ClientTimeout(total=self._timeout)
 
         async with session.request(
             method="GET",
@@ -234,8 +258,8 @@ class AsyncPrometheusConnect:
             params=params,
             auth=self._get_auth(),
             proxy=self._get_proxy(),
-            ssl=not self.disable_ssl,
-            timeout=request_timeout,
+            ssl=(self.ssl_context if self.ssl_context is not None else not self.disable_ssl),
+            **request_kwargs,
         ) as response:
             return response.ok
 
@@ -263,7 +287,11 @@ class AsyncPrometheusConnect:
 
     async def get_label_values(self, label_name: str, params: dict = None):
         """Get all values for a label."""
-        return await self._request("label/{}/values".format(label_name), params or {}, method="GET")
+        return await self._request(
+            "label/{}/values".format(label_name),
+            params or {},
+            method="GET",
+        )
 
     async def get_current_metric_value(
         self, metric_name: str, label_config: dict = None, params: dict = None
